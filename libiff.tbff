@@ -1,0 +1,21 @@
+<include name="ustl/ustl.tbff" />
+<namespace name=iff>
+    <type name=fmt_t extends=uint32_t />
+    <type name=chsize_t extends=uint32_t />
+    <type name=ccount_t extends=uint32_t />
+    <type name=ChunkHeader format=struct >
+	<var name=Format type=fmt_t />
+	<var name=Size type=chsize_t />
+    </type>
+    <type name=VectorHeader extends=ChunkHeader >
+	<var name=ChildFormat type=fmt_t />
+    </type>
+    <type name=ContainerHeader extends=VectorHeader >
+	<var name=nChildren type=ccount_t />
+    </type>
+    <type name=Chunk size=Size extends=ChunkHeader />
+    <type name=Container size=Size extends=ContainerHeader>
+	<var name=Children format=array size=nChildren type=auto />
+    </type>
+</namespace>
+
