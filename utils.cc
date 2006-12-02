@@ -17,27 +17,17 @@ void ReadChunkHeader (const char* typeName, istream& is, CChunkHeader& header, f
     const uoff_t elStart = is.pos();
     is >> header;
     header.Verify (fmt, typeName, elStart);
-    is.verify_remaining ("iff::ReadChunkHeader", typeName, header.DataSize());
+    is.verify_remaining ("iff::ReadChunkHeader", typeName, header.Size());
 }
 
 /// Reads vector \p header from \p is and validates \p fmt.
-void ReadVectorHeader (const char* typeName, istream& is, CVectorHeader& header, fmt_t childFmt, fmt_t fmt)
+void ReadGroupHeader (const char* typeName, istream& is, CGroupHeader& header, fmt_t childFmt, fmt_t fmt)
 {
-    is.verify_remaining ("iff::ReadVectorHeader", typeName, stream_size_of(header));
+    is.verify_remaining ("iff::ReadGroupHeader", typeName, stream_size_of(header));
     const uoff_t elStart = is.pos();
     is >> header;
     header.Verify (childFmt, fmt, typeName, elStart);
-    is.verify_remaining ("iff::ReadVectorHeader", typeName, header.DataSize());
-}
-
-/// Reads container \p header from \p is and validates \p fmt.
-void ReadContainerHeader (const char* typeName, istream& is, CContainerHeader& header, fmt_t childFmt, fmt_t fmt)
-{
-    is.verify_remaining ("iff::ReadContainerHeader", typeName, stream_size_of(header));
-    const uoff_t elStart = is.pos();
-    is >> header;
-    header.Verify (childFmt, fmt, typeName, elStart);
-    is.verify_remaining ("iff::ReadContainerHeader", typeName, header.DataSize());
+    is.verify_remaining ("iff::ReadGroupHeader", typeName, header.Size());
 }
 
 /// Throws XChunkSizeMismatch if chStart + chSize != chEnd
@@ -48,12 +38,12 @@ void VerifyChunkSize (const char* typeName, uoff_t chStart, uoff_t chEnd, size_t
 	throw XChunkSizeMismatch (typeName, chStart, chSize, realSize);
 }
 
-/// Skips chunk in \p is (by reading the header and skipping m_Size bytes).
+/// Skips chunk in \p is (by reading the header and skipping Size() bytes).
 void SkipChunk (istream& is, fmt_t fmt)
 {
     CChunkHeader header;
     ReadChunkHeader ("iff::SkipChunk", is, header, fmt);
-    is.skip (header.DataSize());
+    is.skip (header.Size());
 }
 
 } // namespace iff

@@ -13,9 +13,10 @@ namespace iff {
 //----------------------------------------------------------------------
 
 const fmt_t cfmt_Unknown		= 0;
-const fmt_t cfmt_Container		= IFF_SFMT("FORM");
-const fmt_t cfmt_SimpleContainer	= IFF_SFMT("CAT ");
-const fmt_t cfmt_CompoundContainer	= IFF_SFMT("LIST");
+const fmt_t cfmt_FORM			= IFF_SFMT("FORM");
+const fmt_t cfmt_LIST			= IFF_SFMT("LIST");
+const fmt_t cfmt_CAT			= IFF_SFMT("CAT ");
+const fmt_t cfmt_Filler			= IFF_SFMT("    ");
 const fmt_t cfmt_Bitmap			= IFF_SFMT("ILBM");
 const fmt_t cfmt_Properties		= IFF_SFMT("PROP");
 const fmt_t cfmt_BitmapHeader		= IFF_SFMT("BMHD");
@@ -42,34 +43,8 @@ const fmt_t cfmt_Autodetect		= IFF_SFMT("AUTO");
 
 //----------------------------------------------------------------------
 
-/// Initializes empty header. m_Size == stream_size().
-CChunkHeader::CChunkHeader (void)
-: m_Format (cfmt_Generic),
-  m_Size (stream_size())
-{
-}
-
-/// Initializes header of \p size, in \p fmt.
-CChunkHeader::CChunkHeader (chsize_t size, fmt_t fmt)
-: m_Format (fmt),
-  m_Size (size + stream_size())
-{
-}
-
-/// Reads header from stream \p is
-void CChunkHeader::read (istream& is)
-{
-    is >> m_Format >> m_Size;
-}
-
-/// Writes header into stream \p os
-void CChunkHeader::write (ostream& os) const
-{
-    os << m_Format << m_Size;
-}
-
 /// Verifies that the chunk is of \p fmt, or throws an exception.
-void CChunkHeader::Verify (fmt_t fmt, const char* chunkName, uoff_t offset)
+void CChunkHeader::Verify (fmt_t fmt, const char* chunkName, uoff_t offset) const
 {
     if (m_Format != fmt && fmt != cfmt_Autodetect)
 	throw XFormatMismatch (chunkName, offset, fmt, m_Format);
@@ -77,74 +52,26 @@ void CChunkHeader::Verify (fmt_t fmt, const char* chunkName, uoff_t offset)
 
 //----------------------------------------------------------------------
 
-/// Initializes empty header. m_Size == stream_size().
-CVectorHeader::CVectorHeader (void)
-: CChunkHeader (),
+/// Initializes empty header.
+CGroupHeader::CGroupHeader (void)
+: CChunkHeader (stream_size() - CChunkHeader::stream_size(), cfmt_Generic),
   m_ChildFormat (cfmt_Generic)
 {
-    m_Size += (stream_size() - CChunkHeader::stream_size());
 }
 
 /// Initializes header with given parameters
-CVectorHeader::CVectorHeader (chsize_t size, fmt_t childFormat, fmt_t fmt)
-: CChunkHeader (size, fmt),
+CGroupHeader::CGroupHeader (chsize_t size, fmt_t childFormat, fmt_t fmt)
+: CChunkHeader (size + (stream_size() - CChunkHeader::stream_size()), fmt),
   m_ChildFormat (childFormat)
 {
-    m_Size += (stream_size() - CChunkHeader::stream_size());
-}
-
-/// Reads header from stream \p is
-void CVectorHeader::read (istream& is)
-{
-    CChunkHeader::read (is);
-    is >> m_ChildFormat;
-}
-
-/// Writes header into stream \p os
-void CVectorHeader::write (ostream& os) const
-{
-    CChunkHeader::write (os);
-    os << m_ChildFormat;
 }
 
 /// Verifies that the vector is of \p fmt, or throws an exception.
-void CVectorHeader::Verify (fmt_t childFmt, fmt_t fmt, const char* chunkName, uoff_t offset)
+void CGroupHeader::Verify (fmt_t childFmt, fmt_t fmt, const char* chunkName, uoff_t offset) const
 {
     CChunkHeader::Verify (fmt, chunkName, offset);
     if (m_ChildFormat != childFmt && childFmt != cfmt_Autodetect)
 	throw XFormatMismatch (chunkName, offset, childFmt, m_ChildFormat);
-}
-
-//----------------------------------------------------------------------
-
-/// Initializes empty header. m_Size == stream_size().
-CContainerHeader::CContainerHeader (void)
-: CVectorHeader (),
-  m_nChildren (0)
-{
-    m_Size += (stream_size() - CVectorHeader::stream_size());
-}
-
-/// Initializes header with given parameters
-CContainerHeader::CContainerHeader (chsize_t size, ccount_t nChildren, fmt_t childFormat, fmt_t fmt)
-: CVectorHeader (size, childFormat, fmt),
-  m_nChildren (nChildren)
-{
-    m_Size += (stream_size() - CVectorHeader::stream_size());
-}
-
-/// Reads header from stream \p is
-void CContainerHeader::read (istream& is)
-{
-    CVectorHeader::read (is);
-    is >> m_nChildren;
-}
-
-/// Writes header into stream \p os
-void CContainerHeader::write (ostream& os) const
-{
-    CVectorHeader::write (os);
-    os << m_nChildren;
 }
 
 //----------------------------------------------------------------------

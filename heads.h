@@ -29,23 +29,21 @@ typedef uint32_t	ccount_t;	///< Type for the child count field
 //----------------------------------------------------------------------
 
 #if BYTE_ORDER == LITTLE_ENDIAN
-    #define IFF_FMT(a,b,c,d)	(::iff::fmt_t)(((::iff::fmt_t)(d) << 24) | \
-					 ((::iff::fmt_t)(c) << 16) | \
-					 ((::iff::fmt_t)(b) << 8) | \
-					 (::iff::fmt_t)(a))
+    #define IFF_FMT(a,b,c,d)	((((((::iff::fmt_t(d)<<8)|(c))<<8)|(b))<<8)|(a))
 #else
-    #define IFF_FMT(a,b,c,d)	(::iff::fmt_t)(((::iff::fmt_t)(a) << 24) | \
-					 ((::iff::fmt_t)(b) << 16) | \
-					 ((::iff::fmt_t)(c) << 8) | \
-					 (::iff::fmt_t)(d))
+    #define IFF_FMT(a,b,c,d)	((((((::iff::fmt_t(a)<<8)|(b))<<8)|(c))<<8)|(d))
 #endif
 #define IFF_SFMT(s)		IFF_FMT(s[0],s[1],s[2],s[3])
 
-/// \todo These should be in a configuration file somewhere
+// Byte order conversion; LE by default.
+inline void boci2n (uint32_t& v)	{ v = le_to_native(v); }
+inline uint32_t bon2i(uint32_t v)	{ return (native_to_le(v)); }
+
 extern const fmt_t cfmt_Unknown;
-extern const fmt_t cfmt_Container;
-extern const fmt_t cfmt_SimpleContainer;
-extern const fmt_t cfmt_CompoundContainer;
+extern const fmt_t cfmt_CAT;
+extern const fmt_t cfmt_FORM;
+extern const fmt_t cfmt_LIST;
+extern const fmt_t cfmt_Filler;
 extern const fmt_t cfmt_Bitmap;
 extern const fmt_t cfmt_Properties;
 extern const fmt_t cfmt_BitmapHeader;
@@ -66,7 +64,6 @@ extern const fmt_t cfmt_Generic;
 
 // Extension chunk formats
 extern const fmt_t cfmt_Vector;
-extern const fmt_t cfmt_CountedContainer;
 extern const fmt_t cfmt_StringTable;
 extern const fmt_t cfmt_Autodetect;
 
@@ -79,66 +76,53 @@ extern const fmt_t cfmt_Autodetect;
 /// Contains size and format information for the chunk. Like
 /// CContainerHeader, the written format is the spec too, so
 /// can be written manually. The size is the size of the
-/// entire chunk, including the header (to simplify size
-/// computations). The format is entirely user-defined.
+/// chunk data, not including the header
 ///
 class CChunkHeader {
 public:
-			CChunkHeader (void);
-			CChunkHeader (chsize_t size, fmt_t fmt = cfmt_Generic);
-    void		read (istream& is);
-    void		write (ostream& os) const;
+    inline		CChunkHeader (void)		: m_Format (cfmt_Generic), m_Size (0) { }
+    inline		CChunkHeader (chsize_t size, fmt_t fmt = cfmt_Generic)	: m_Format (fmt), m_Size (size) { }
+    inline void		read (istream& is)		{ is >> m_Format >> m_Size; boci2n(m_Format); boci2n(m_Size); }
+    inline void		write (ostream& os) const	{ os << bon2i(m_Format) << bon2i(m_Size); }
     inline size_t	stream_size (void) const	{ return (stream_size_of(m_Format) + stream_size_of(m_Size)); }
-    inline size_t	DataSize (void) const		{ return (m_Size - stream_size()); }
-    void		Verify (fmt_t fmt = cfmt_Generic, const char* chunkName = "chunk", uoff_t offset = 0);
-public:
+    inline size_t	Size (void) const		{ return (m_Size); }
+    inline size_t	SizeWithHeader (void) const	{ return (Size() + stream_size()); }
+    inline fmt_t	Format (void) const		{ return (m_Format); }
+    void		Verify (fmt_t fmt = cfmt_Generic, const char* chunkName = "chunk", uoff_t offset = 0) const;
+private:
     fmt_t		m_Format;	///< Format of the chunk
     chsize_t		m_Size;		///< Size of the chunk including the header.
 };
 
 //----------------------------------------------------------------------
 
-/// \class CVectorHeader heads.h iff.h
+/// \class CGroupHeader heads.h iff.h
 ///
-/// \brief Header for aggregate chunks without element count.
+/// \brief Header for aggregate chunks like FORM, LIST, and CAT
+/// This header can be written standalone, or with WriteVector.
+/// Each IFF file must start with a group header with file size
+/// and type of contents.
 ///
-/// ContainerHeader has the child count, which is redunant information
-/// if the data is already stored in a vector, or some such container.
-/// Hence this header will omit the child count.
-///
-class CVectorHeader : public CChunkHeader {
+class CGroupHeader : public CChunkHeader {
 public:
-			CVectorHeader (void);
-			CVectorHeader (chsize_t size, fmt_t childFormat = cfmt_Generic, fmt_t fmt = cfmt_Vector);
-    void		read (istream& is);
-    void		write (ostream& os) const;
+			CGroupHeader (void);
+			CGroupHeader (chsize_t size, fmt_t childFormat = cfmt_Generic, fmt_t fmt = cfmt_FORM);
+    inline void		read (istream& is)		{ CChunkHeader::read (is); is >> m_ChildFormat; boci2n (m_ChildFormat); }
+    inline void		write (ostream& os) const	{ CChunkHeader::write (os); os << bon2i(m_ChildFormat); }
     inline size_t	stream_size (void) const	{ return (CChunkHeader::stream_size() + stream_size_of(m_ChildFormat)); }
-    inline size_t	DataSize (void) const		{ return (m_Size - stream_size()); }
-    void		Verify (fmt_t childFormat = cfmt_Generic, fmt_t fmt = cfmt_Vector, const char* chunkName = "vector", uoff_t offset = 0);
-public:
+    inline fmt_t	ChildFormat (void) const	{ return (m_ChildFormat); }
+    inline size_t	Size (void) const		{ return (CChunkHeader::Size() - (stream_size() - CChunkHeader::stream_size())); }
+    void		Verify (fmt_t childFormat = cfmt_Generic, fmt_t fmt = cfmt_FORM, const char* chunkName = "FORM", uoff_t offset = 0) const;
+private:
     fmt_t		m_ChildFormat;	///< Format of each child chunk.
 };
 
 //----------------------------------------------------------------------
 
-/// \class CContainerHeader heads.h iff.h
-///
-/// \brief Header for aggregate chunks.
-///
-/// Chunks that contain other chunks are common and are thus standardized
-/// with this class. Number of child chunks and their size are specified.
-///
-class CContainerHeader : public CVectorHeader {
-public:
-			CContainerHeader (void);
-			CContainerHeader (chsize_t size, ccount_t nChildren, fmt_t childFormat = cfmt_Generic, fmt_t fmt = cfmt_CountedContainer);
-    void		read (istream& is);
-    void		write (ostream& os) const;
-    inline size_t	stream_size (void) const	{ return (CVectorHeader::stream_size() + stream_size_of(m_nChildren)); }
-    inline size_t	DataSize (void) const		{ return (m_Size - stream_size()); }
-    inline void		Verify (fmt_t childFormat = cfmt_Generic, fmt_t fmt = cfmt_SimpleContainer, const char* chunkName = "container", uoff_t offset = 0)	{ CVectorHeader::Verify (childFormat, fmt, chunkName, offset); }
-public:
-    ccount_t		m_nChildren;	///< Number of child chunks.
+/// \brief PROP section values
+struct SProp {
+    fmt_t	m_Name;		///< 4 character prop name (use IFF_FMT to define)
+    uint32_t	m_Value;	///< Property value.
 };
 
 //----------------------------------------------------------------------
@@ -146,8 +130,7 @@ public:
 } // namespace iff
 
 STD_STREAMABLE(iff::CChunkHeader)
-STD_STREAMABLE(iff::CVectorHeader)
-STD_STREAMABLE(iff::CContainerHeader)
+STD_STREAMABLE(iff::CGroupHeader)
 
 #endif
 

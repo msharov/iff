@@ -65,7 +65,7 @@ void XChunkSizeMismatch::info (string& msgbuf, const char* fmt) const throw()
     strncpy (dmname, m_TypeName, VectorSize(dmname));
     dmname[VectorSize(dmname)-1] = 0;
     demangle_type_name (VectorBlock (dmname));
-    try { msgbuf.format (fmt, dmname, m_Offset, m_Expected, m_Actual); } catch (...) {}
+    try { msgbuf.format (fmt, dmname, m_Offset, m_Actual, m_Expected); } catch (...) {}
 }
 
 //----------------------------------------------------------------------
