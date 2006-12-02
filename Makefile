@@ -2,7 +2,7 @@ include Config.mk
 
 SRCS	= $(wildcard *.cc)
 OBJS	= $(SRCS:.cc=.o)
-INCS	= $(wildcard *.h) libiff.tbff
+INCS	= $(filter-out bsconf.%,$(wildcard *.h)) libiff.tbff
 
 ################ Library link names ####################################
 
@@ -22,7 +22,7 @@ endif
 
 .PHONY:	all install uninstall install-incs uninstall-incs
 .PHONY: install-static install-shared uninstall-static uninstall-shared
-.PHONY:	clean depend dox html dist distclean maintainer-clean
+.PHONY:	clean depend html dist distclean maintainer-clean
 
 all:	${ALLLIBS}
 
@@ -44,7 +44,6 @@ ${LIBSOBLD}:	${OBJS}
 	@${LD} ${LDFLAGS} ${SHBLDFL} -o $@ $^ ${LIBS}
 
 html:
-dox:
 	@${DOXYGEN} ${DOCT}
 
 ################ Installation ##########################################
@@ -99,19 +98,17 @@ depend: ${SRCS}
 TMPDIR	= /tmp
 DISTDIR	= ${HOME}/stored
 DISTNAM	= ${LIBNAME}-${MAJOR}.${MINOR}
-DISTTAR	= ${DISTNAM}-${BUILD}.tar.bz2
-DDOCTAR	= ${LIBNAME}-docs-${MAJOR}.${MINOR}-${BUILD}.tar.bz2
+DISTTAR	= ${DISTNAM}.${BUILD}.tar.bz2
 
 dist:
 	mkdir ${TMPDIR}/${DISTNAM}
 	cp -r . ${TMPDIR}/${DISTNAM}
-	+${MAKE} -C ${TMPDIR}/${DISTNAM} dox distclean
-	(cd ${TMPDIR}; tar jcf ${DISTDIR}/${DDOCTAR} ${DISTNAM}/docs/html)
-	(cd ${TMPDIR}/${DISTNAM}; rm -rf .svn docs/.svn docs/style/.svn docs/html)
+	+${MAKE} -C ${TMPDIR}/${DISTNAM} distclean
+	(cd ${TMPDIR}/${DISTNAM}; rm -rf docs/html `find . -name .svn`)
 	(cd ${TMPDIR}; tar jcf ${DISTDIR}/${DISTTAR} ${DISTNAM}; rm -rf ${DISTNAM})
 
 distclean:	clean
-	@rm -f Config.mk config.h ${LIBNAME}.spec bsconf.o bsconf .depend
+	@rm -f Config.mk config.h bsconf.o bsconf .depend
 
 maintainer-clean: distclean
 	@rm -rf docs/html

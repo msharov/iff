@@ -1,6 +1,7 @@
-// Copyright (c) 2003-2006 by Mike Sharov <msharov@users.sourceforge.net>
+// This file is part of the interchange file format library.
 //
-// iff.h
+// Copyright (C) 2003-2006 by Mike Sharov <msharov@users.sourceforge.net>
+// This file is free software, distributed under the MIT License.
 //
 /// \file iff.h
 ///
@@ -21,13 +22,12 @@
 /// to implement byte-order determination into generic read-write code.
 /// Any such context is necessarily ugly and inefficient on little-endian
 /// machines, which, let's face it, constitute 99% of all computers used.
-/// As far as I am concerned, the big-endian bigots can keep their files to themselves.
 ///
 
 #ifndef IFF_H_4ABC08913E8E483F183AEAA4036657B9
 #define IFF_H_4ABC08913E8E483F183AEAA4036657B9
 
-#include "iff/iffutil.h"
+#include "iff/utils.h"
 
 #endif
 

@@ -1,14 +1,17 @@
-// Copyright (c) 2003-2006 by Mike Sharov <msharov@users.sourceforge.net>
+// This file is part of the interchange file format library.
 //
-// iffxept.h
+// Copyright (C) 2003-2006 by Mike Sharov <msharov@users.sourceforge.net>
+// This file is free software, distributed under the MIT License.
 //
-// 	Exceptions thrown by iff library functions.
+// xept.h
+//
+// Exceptions thrown by iff library functions.
 //
 
-#ifndef IFFXEPT_H_1166C45177F868B740FD8B3221078767
-#define IFFXEPT_H_1166C45177F868B740FD8B3221078767
+#ifndef XEPT_H_1166C45177F868B740FD8B3221078767
+#define XEPT_H_1166C45177F868B740FD8B3221078767
 
-#include "iffheader.h"
+#include "heads.h"
 
 namespace iff {
 
@@ -16,7 +19,7 @@ namespace iff {
 // Exception definitions
 //----------------------------------------------------------------------
 
-/// \class XFormatMismatch iffxept.h iff.h
+/// \class XFormatMismatch xept.h iff.h
 /// \brief Thrown when the format of the block being read does not match the format requested.
 class XFormatMismatch : public exception {
 public:
@@ -30,7 +33,7 @@ private:
     fmt_t		m_Actual;
 };
 
-/// \class XChunkSizeMismatch iffxept.h iff.h
+/// \class XChunkSizeMismatch xept.h iff.h
 /// \brief Thrown when the calculated size of the block being read differs from the given size.
 class XChunkSizeMismatch : public exception {
 public:

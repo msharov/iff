@@ -1,14 +1,18 @@
-// Copyright (c) 2003-2006 by Mike Sharov <msharov@users.sourceforge.net>
+// This file is part of the interchange file format library.
 //
-// iffxept.cc
+// Copyright (C) 2003-2006 by Mike Sharov <msharov@users.sourceforge.net>
+// This file is free software, distributed under the MIT License.
+//
+// xept.cc
 //
 
-#include "iffxept.h"
+#include "xept.h"
 
 namespace iff {
 
 //----------------------------------------------------------------------
 
+/// Wrong format error for \p typeName at \p offset; \p expected format does not match \p actual format.
 XFormatMismatch::XFormatMismatch (const char* typeName, uoff_t offset, fmt_t expected, fmt_t actual) throw()
 : exception(),
   m_TypeName (typeName),
@@ -18,6 +22,7 @@ XFormatMismatch::XFormatMismatch (const char* typeName, uoff_t offset, fmt_t exp
 {
 }
 
+/// Writes error description to \p msgbuf. Default fmt is "iff chunk %s at 0x%zX has format %08X (%c%c%c%c), expected %08X (%c%c%c%c)"
 void XFormatMismatch::info (string& msgbuf, const char* fmt) const throw()
 {
     if (!fmt) fmt = "iff chunk %s at 0x%zX has format %08X (%c%c%c%c), expected %08X (%c%c%c%c)";
@@ -42,6 +47,7 @@ void XFormatMismatch::info (string& msgbuf, const char* fmt) const throw()
 
 //----------------------------------------------------------------------
 
+/// Chunk of \p typeName at \p offset is not of the \p expected size.
 XChunkSizeMismatch::XChunkSizeMismatch (const char* typeName, uoff_t offset, size_t expected, size_t actual) throw()
 : exception(),
   m_TypeName (typeName),
@@ -51,6 +57,7 @@ XChunkSizeMismatch::XChunkSizeMismatch (const char* typeName, uoff_t offset, siz
 {
 }
 
+/// Writes error description to \p msgbuf. Default \p fmt is "iff chunk %s at 0x%zX is %zu bytes, expected %zu"
 void XChunkSizeMismatch::info (string& msgbuf, const char* fmt) const throw()
 {
     if (!fmt) fmt = "iff chunk %s at 0x%zX is %zu bytes, expected %zu";

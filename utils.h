@@ -1,15 +1,17 @@
-// Copyright (c) 2003-2006 by Mike Sharov <msharov@users.sourceforge.net>
+// This file is part of the interchange file format library.
 //
-// iffutil.h
+// Copyright (C) 2003-2006 by Mike Sharov <msharov@users.sourceforge.net>
+// This file is free software, distributed under the MIT License.
+//
+// utils.h
 //
 // Utility functions for Interchange File Format.
 //
 
-#ifndef IFFUTIL_H_1A23A18571746C4F243976256D15804A
-#define IFFUTIL_H_1A23A18571746C4F243976256D15804A
+#ifndef UTILS_H_1A23A18571746C4F243976256D15804A
+#define UTILS_H_1A23A18571746C4F243976256D15804A
 
-#include "iffheader.h"
-#include "iffxept.h"
+#include "xept.h"
 
 namespace iff {
 

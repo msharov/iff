@@ -1,9 +1,12 @@
-// Copyright (c) 2003-2006 by Mike Sharov <msharov@users.sourceforge.net>
+// This file is part of the interchange file format library.
 //
-// iffutil.cc
+// Copyright (C) 2003-2006 by Mike Sharov <msharov@users.sourceforge.net>
+// This file is free software, distributed under the MIT License.
+//
+// utils.cc
 //
 
-#include "iffutil.h"
+#include "utils.h"
 
 namespace iff {
 

@@ -1,19 +1,21 @@
-// Copyright (c) 2003-2006 by Mike Sharov <msharov@users.sourceforge.net>
+// This file is part of the interchange file format library.
 //
-// iffheader.cc
+// Copyright (C) 2003-2006 by Mike Sharov <msharov@users.sourceforge.net>
+// This file is free software, distributed under the MIT License.
+//
+// heads.cc
 //
 
-#include "iffheader.h"
-#include "iffxept.h"
+#include "xept.h"
 
 namespace iff {
 
 //----------------------------------------------------------------------
 
 const fmt_t cfmt_Unknown		= 0;
-const fmt_t cfmt_Container		= IFF_SFMT("LIST");
+const fmt_t cfmt_Container		= IFF_SFMT("FORM");
 const fmt_t cfmt_SimpleContainer	= IFF_SFMT("CAT ");
-const fmt_t cfmt_CompoundContainer	= IFF_SFMT("FORM");
+const fmt_t cfmt_CompoundContainer	= IFF_SFMT("LIST");
 const fmt_t cfmt_Bitmap			= IFF_SFMT("ILBM");
 const fmt_t cfmt_Properties		= IFF_SFMT("PROP");
 const fmt_t cfmt_BitmapHeader		= IFF_SFMT("BMHD");
@@ -34,6 +36,7 @@ const fmt_t cfmt_Generic		= IFF_SFMT("BODY");
 
 // Extension chunk formats
 const fmt_t cfmt_Vector			= IFF_SFMT("VECT");
+const fmt_t cfmt_CountedContainer	= IFF_SFMT("CNTR");
 const fmt_t cfmt_StringTable		= IFF_SFMT("STRT");
 const fmt_t cfmt_Autodetect		= IFF_SFMT("AUTO");
 

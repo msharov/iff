@@ -1,12 +1,15 @@
-// Copyright (c) 2003-2006 by Mike Sharov <msharov@users.sourceforge.net>
+// This file is part of the interchange file format library.
 //
-// iffheader.h
+// Copyright (C) 2003-2006 by Mike Sharov <msharov@users.sourceforge.net>
+// This file is free software, distributed under the MIT License.
 //
-// 	Chunk header formats for the Interchange File Format.
+// heads.h
+//
+// Chunk header formats for the Interchange File Format.
 //
 
-#ifndef IFFHEADER_H_6AE64E742217B13E3F576C6D5A4C3292
-#define IFFHEADER_H_6AE64E742217B13E3F576C6D5A4C3292
+#ifndef HEADS_H_6AE64E742217B13E3F576C6D5A4C3292
+#define HEADS_H_6AE64E742217B13E3F576C6D5A4C3292
 
 #include <ustl.h>
 
@@ -63,12 +66,13 @@ extern const fmt_t cfmt_Generic;
 
 // Extension chunk formats
 extern const fmt_t cfmt_Vector;
+extern const fmt_t cfmt_CountedContainer;
 extern const fmt_t cfmt_StringTable;
 extern const fmt_t cfmt_Autodetect;
 
 //----------------------------------------------------------------------
 
-/// \class CChunkHeader iffheader.h iff.h
+/// \class CChunkHeader heads.h iff.h
 ///
 /// \brief Header for non-aggregate chunks.
 ///
@@ -94,7 +98,7 @@ public:
 
 //----------------------------------------------------------------------
 
-/// \class CVectorHeader iffheader.h iff.h
+/// \class CVectorHeader heads.h iff.h
 ///
 /// \brief Header for aggregate chunks without element count.
 ///
@@ -117,7 +121,7 @@ public:
 
 //----------------------------------------------------------------------
 
-/// \class CContainerHeader iffheader.h iff.h
+/// \class CContainerHeader heads.h iff.h
 ///
 /// \brief Header for aggregate chunks.
 ///
@@ -127,7 +131,7 @@ public:
 class CContainerHeader : public CVectorHeader {
 public:
 			CContainerHeader (void);
-			CContainerHeader (chsize_t size, ccount_t nChildren, fmt_t childFormat = cfmt_Generic, fmt_t fmt = cfmt_SimpleContainer);
+			CContainerHeader (chsize_t size, ccount_t nChildren, fmt_t childFormat = cfmt_Generic, fmt_t fmt = cfmt_CountedContainer);
     void		read (istream& is);
     void		write (ostream& os) const;
     inline size_t	stream_size (void) const	{ return (CVectorHeader::stream_size() + stream_size_of(m_nChildren)); }
