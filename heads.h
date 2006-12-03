@@ -11,7 +11,7 @@
 #ifndef HEADS_H_6AE64E742217B13E3F576C6D5A4C3292
 #define HEADS_H_6AE64E742217B13E3F576C6D5A4C3292
 
-#include <ustl.h>
+#include "config.h"
 
 /// Contains functions for dealing with IFF formatted files.
 namespace iff {
@@ -28,16 +28,16 @@ typedef uint32_t	ccount_t;	///< Type for the child count field
 // IFF standard chunk formats
 //----------------------------------------------------------------------
 
-#if BYTE_ORDER == LITTLE_ENDIAN
+#if IFF_BYTE_ORDER == USTL_LITTLE_ENDIAN
     #define IFF_FMT(a,b,c,d)	((((((::iff::fmt_t(d)<<8)|(c))<<8)|(b))<<8)|(a))
+    inline void boci2n (uint32_t& v)	{ v = le_to_native(v); }
+    inline uint32_t bon2i(uint32_t v)	{ return (native_to_le(v)); }
 #else
     #define IFF_FMT(a,b,c,d)	((((((::iff::fmt_t(a)<<8)|(b))<<8)|(c))<<8)|(d))
+    inline void boci2n (uint32_t& v)	{ v = be_to_native(v); }
+    inline uint32_t bon2i(uint32_t v)	{ return (native_to_be(v)); }
 #endif
 #define IFF_SFMT(s)		IFF_FMT(s[0],s[1],s[2],s[3])
-
-// Byte order conversion; LE by default.
-inline void boci2n (uint32_t& v)	{ v = le_to_native(v); }
-inline uint32_t bon2i(uint32_t v)	{ return (native_to_le(v)); }
 
 extern const fmt_t cfmt_Unknown;
 extern const fmt_t cfmt_CAT;
@@ -129,6 +129,7 @@ struct SProp {
 
 } // namespace iff
 
+ALIGNOF(iff::CChunkHeader, IFF_GRAIN)
 STD_STREAMABLE(iff::CChunkHeader)
 STD_STREAMABLE(iff::CGroupHeader)
 
