@@ -1,0 +1,330 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Interchange File Format Library</title>
+    <link rel="stylesheet" type="text/css" href="style/default.css" />
+    <meta http-equiv="Content-Type" content="text/xhtml+xml; charset=ISO-8859-1" />
+</head>
+<body>
+<div class="banner">
+    <h1>Interchange File Format</h1>
+</div>
+<hr class="banner" />
+<h2>Introduction</h2>
+<p>
+The Interchange File Format is a simple structured binary file format
+consisting of sized and typed chunks of data, selectively readable without
+having to know the format of each chunk. This functionality is similar
+to what XML provides for text documents, and the IFF format can indeed
+be viewed as a sort of a binary XML. IFF's extensibility is an excellent
+way of not breaking old applications when the file format changes, making
+it an excellent choice for your next application's data files. The IFF
+is also the simplest and the smallest such data format, ensuring that
+your files consist of real data rather than overhead and that your code
+spends more time on real work than on parsing the data file. This library
+defines the IFF header structures and provides simple algorithms for
+directly writing many of your objects as chunks and containers.
+</p>
+<h2>Installation</h2>
+<p>
+This library can be downloaded from SourceForge, as can its sole prerequisite:
+<ul>
+    <li><a href="https://sourceforge.net/project/showfiles.php?group_id=180994">libiff</a> - The library source package.</li>
+    <li><a href="https://sourceforge.net/project/showfiles.php?group_id=76798">uSTL</a> - An STL implementation, required.</li>
+</ul>
+First, unpack and install uSTL, as described in its documentation.
+Unpack libiff and run <kbd>./configure; make install</kbd>, which will
+install the library to /usr/local/lib and headers to /usr/local/include.
+<kbd>./configure --help</kbd> lists available configuration options,
+in the usual autoconf fashion. The one thing to be aware of is that
+by default the library will not be completely conforming to EA85
+specification. Why that is so, and why you should take the default options
+anyway, is discussed in detail in the next section. If you really want
+to use the original EA85 format, you can to pass <kbd>--with-bigendian
+--with-2grain</kbd> to <tt>configure</tt>.
+</p>
+<h2>Usage</h2>
+<p>
+If you are using C++, chances are you already have an object-oriented
+design of some kind. You have a collection of objects, related to each
+other in some way, and you want to write them all to a file in some
+way. It is, of course, possible to just write them all to the file, one
+after the other, but that approach makes things difficult if you ever
+decide to change the structure of those objects, write more or fewer of
+them, or explain to other people how to read your format. Hence, it is
+desirable to create some kind of structure in the file, to be able to
+determine where each objects begins and ends, and what kind of object is
+where. When using an IFF format, you'll make simple objects into chunks,
+and objects containing other objects into FORMs, LISTs, or CATs.
+</p><p>
+The first task is to make each of your objects readable and writable
+through uSTL streams. To do that you'll need to define three methods,
+<tt>read</tt>, <tt>write</tt>, and <tt>stream_size</tt>, and create
+flow operator overrides with a <tt>STD_STREAMABLE</tt> macro. Here is
+a typical example:
+</p><pre>
+
+#include &lt;iff.h&gt;	// iff header includes ustl.h, but doesn't use the namespace.
+using namespace ustl;	// it is recommended to leave iff:: namespace on.
+
+/// Stores player's vital statistics.
+class CPlayerStats {
+public:
+    void        read (istream&amp; is);
+    void        write (ostream&amp; os) const;
+    size_t      stream_size (void) const;
+private:
+    uint16_t    m_HP;
+    uint16_t    m_MaxHP;
+    uint16_t    m_Mana;
+    uint16_t    m_MaxMana;
+};
+
+// Since the object is simple, and contains no other objects,
+//         we'll make it a simple chunk.
+enum {	// Define a chunk format for writing this object.
+    fmt_PlayerStats = IFF_FMT('S','T','A','T')
+};      // In a hex editor you'll see STAT at the beginning of the object
+        // making it easy to find when you want to hack something in it.
+
+/// Reads the object from stream \p is
+void CPlayerStats::read (istream&amp; is)
+{
+    is &gt;&gt; m_HP &gt;&gt; m_MaxHP &gt;&gt; m_Mana &gt;&gt; m_MaxMana;
+}
+
+/// Writes the object to stream \p os.
+void CPlayerStats::write (ostream&amp; os) const
+{
+    os &lt;&lt; m_HP &lt;&lt; m_MaxHP &lt;&lt; m_Mana &lt;&lt; m_MaxMana;
+}
+
+/// Returns the size of the written object
+inline size_t CPlayerStats::stream_size (void) const
+{
+    return (stream_size_of (m_HP) +	// This evaluates at compile time to 8,
+	    stream_size_of (m_MaxHP) +	// so making this function inline is
+            stream_size_of (m_Mana) +	// usually a good idea.
+	    stream_size_of (m_MaxMana));
+}
+
+STD_STREAMABLE(CPlayerStats)
+</pre><p>
+This needs to happen in all your objects. Make them streamable and define
+a format id. Then, to save everything, use <tt>iff::Read/Write</tt>
+functions from <tt>iff/utils.h</tt> (no, you don't need to include it
+separately), like this:
+</p><pre>
+
+void SomeDocumentObject::SavePlayer (const string&amp; filename) const
+{
+    // uSTL streams work on memory blocks, not on files directly,
+    // so the needed buffer has to be preallocated.
+    //
+    memblock buf (iff::form_size_of (m_Player));
+    //
+    // We'll need a stream to write the player object to.
+    //
+    ostream os (buf);
+    //
+    // This writes it as a FORM, which just happens to be one of the three
+    // allowable top-level chunk types. When a file starts with FORM, LIST,
+    // or CAT, programs know it is an IFF file. The top level chunk should
+    // contain the entire file, and nothing should follow it.
+    //
+    iff::WriteFORM (os, m_Player, fmt_MyGamePlayer);
+    buf.write_file ("player.sav");
+}
+
+// The following will be in the player class
+
+/// Reads the player object from stream \p is
+size_t CPlayer::stream_size (istream&amp; is)
+{
+    // Player is a compound object, a FORM, so it can only contain other
+    // chunks and FORMs, not simple values.
+    return (iff::chunk_size_of (m_Name) +	// m_Name is a string
+	    iff::chunk_size_of (m_Stats) +	// CPlayerStats object
+	    iff::vector_size_of (m_Inventory) + // a vector, chunk saved
+	    // Quests is a special manager object that writes each quest
+	    // as a chunk or a form with some common settings.
+	    iff::list_size_of (m_Quests));
+}
+
+/// Reads the player object from stream \p is
+void CPlayer::write (ostream&amp; os) const
+{
+    iff::WriteChunk (os, m_Name, fmt_PlayerName);
+    iff::WriteChunk (os, m_Stats, fmt_PlayerStats);
+    iff::WriteVector (os, m_Inventory, fmt_Inventory);
+    iff::WriteLIST (os, m_Quests, fmt_Quests);
+}
+
+/// Reads the player object from stream \p is
+void CPlayer::read (istream&amp; is)
+{
+    iff::ReadChunk (is, m_Name, fmt_PlayerName);
+    iff::ReadChunk (is, m_Stats, fmt_PlayerStats);
+    iff::ReadVector (is, m_Inventory, fmt_Inventory);
+    iff::ReadLIST (is, m_Quests, fmt_Quests);
+}
+</pre><p>
+The above is enough to get you a structured file with format checking
+on read.  If you try reading something that is not a player savegame file
+or if the file is somehow corrupted, you'll get an informative exception.
+The read method above is the simplest implementation, to be used if
+you really do not expect things to change at this level. A player will
+always have a name, some stats, and stuff in his pockets. But what if
+you decided to add, say, a known spell list? The read function will then
+break. Sure you can hack up some conversion routine for yourself, but
+what about your users who already have an old version of your game? Are
+you going to tell them that those fifty four hours of gameplay they
+saved will have to be replayed just because you added one lousy feature?
+Well, some companies are like that. But with IFF, you have the formats
+and sizes in each header, so you can make a more resilient read that will
+support new and old formats alike:
+</p><pre>
+
+/// Reads the player object from stream \p is
+void CPlayer::read (istream&amp; is)
+{
+    while (is.remaining()) {
+        //
+        // The Peek function will get the format without moving the stream
+	// pointer, handling also the case of compound chunks.
+	//
+        switch (iff::PeekChunkOrGroupFormat (is)) {
+            case fmt_PlayerName:  iff::ReadChunk (is, m_Name,      fmt_PlayerName);  break;
+	    case fmt_PlayerStats: iff::ReadChunk (is, m_Stats,     fmt_PlayerStats); break;
+	    case fmt_Inventory:   iff::ReadVector(is, m_Inventory, fmt_Inventory);   break;
+	    case fmt_Quests:      iff::ReadLIST  (is, m_Quests,    fmt_Quests);      break;
+	    default:              iff::SkipChunk (is);                               break;
+	}
+    }
+}
+</pre><p>
+This way missing chunks will not cause a problem, resulting in defaults
+being used for the corresponding object, and neither will new ones, which
+will be skipped. Once you have this set up, changing the file format
+becomes more or less easy and painless, both for you and your users.
+All this you get for a very small cost of changing simple flow writes
+to WriteChunk and the like. As you can see above, the code remains
+readable, maintainable, and compact. Finally, if a user sends you his
+savefile that reproduces some bug, and you need to find out whether he
+was low on mana, you'll be able to find the right number at a glance
+in a hex editor; it's bytes 8 and 9 after STAT.
+</p>
+<h2>Format description</h2>
+<p>
+The full format description is available in the original
+<a href="http://www.martinreddy.net/gfx/2d/IFF.txt">EA85 IFF standard</a>
+document, and you are invited to read it. This section provides only a
+short and practical summary.
+</p><p>
+Every IFF file consists of a hierarchy of chunks, each chunk being an
+opaque block of data with an 8-byte header specifying the chunk's type
+and size. The type field is a 32-bit integer with such a value that it
+looks like text when viewed in a hex editor. Typical values are "BODY",
+"FORM", or "LIST". The size field is a 32-bit integer specifying the
+size of the chunk's data, not including the 8-byte header. For example,
+a color palette chunk would start with 4 byte type "CMAP", followed by
+the size of the color data, 256*3=768, and followed by 768 bytes of RGB
+3-byte values, for a total of 776 bytes in the chunk with header.
+</p><p>
+Some chunks may contain other chunks. These compound chunks have
+format fields FORM, LIST, and CAT, and append a 4 byte contents type
+to the chunk header before the child chunks. For example, a FORM chunk
+containing two other chunks will start with format field FORM, followed
+by the size of the chunk data, which is the number of bytes between the
+end of this size field and the end of the last child chunk, followed by
+the two child chunks in normal format.
+</p><p>
+The difference between FORM, LIST, and CAT, is that FORMs can contain
+chunks. CATs contain only other containers and are thought of as a
+simple aggregation of them without regard for order. LISTs are like CATs,
+but may also contain PROP chunks, which are scoped named property values.
+</p><p>
+The above ideas are the ones present in all the IFF-based formats, which,
+believe it or not, still exist. However, it is not very likely that you
+will encounter any and when you do, there is a good chance that what you
+will find will not be standard compliant. The problematic issues are
+byte ordering and chunk alignment. The EA85 specification states that
+header integers are to be in big endian byte order and that chunks are
+to be aligned on even grain, but every IFF-based format makes up its
+own mind about byte order and alignment. This library is no exception,
+having chosen little-endian byte order and 4-grain alignment.
+</p><p>
+Why be incompatible? Because there really aren't all that many IFF files
+out there. Aside from Windows .wav files in RIFF format, you are unlikely
+to ever encounter one. It is far more likely that you are using this
+library to write your own data files, which are not expected to be read by
+any old IFF-based software, all of which have been obsolete for decades.
+Therefore, it is much better to modify the format a little to fit modern
+hardware rather than the old Motorola 68000 for which EA85 IFF standard
+was designed.
+</p><p>
+Why use little-endian byte order? Because every desktop computer in the
+world, except for a few aging Macs here and there, uses little-endian
+integers. Back in 1985 there were quite a few big-endian machines,
+including Motorola 68000, and many people thought that big-endian byte
+order will eventually become the standard as Intel heretics convert to the
+true faith. This was particularly true in academic circles, which were
+aggressively lobbied by Sun and its hardware obtained with substatial
+educational institution discounts. Over time, the exact opposite has
+happened, and the only big-endian machines remaining are gathering dust
+in server rooms and antique university computer labs.
+</p><p>
+As a result, it makes far more sense to use little-endian integers
+everywhere, furthering the entrenchment of this now almost universal
+standard. Many IFF formats, including its most common variation, the
+Microsoft RIFF format, used for .wav files, already use little-endian
+integers. In a few more years big-endian format should disappear
+completely and all that extra byteswapping work will no longer be
+necessary. Until then, it's your choice; will you stick to an old format
+for the sake of conformity to an obsolete standard, or embrace the future
+and set a new standard that best fits modern hardware? Both options are
+supported by the library, via configure, so it's your choice.
+</p><p>
+The second contenuous issue is chunk alignment. The EA85 standard
+specifies 2-grain alignment because the 68000 processor could not access
+a dword at an odd grain. This is still true, and some modern CPUs also
+crash when you try to do that. Intel architecture CPUs do not crash, but
+they slow down considerably. In addition, unlike the 68000 processor,
+modern CPUs require 4-grain alignment for 32-bit values. This is the
+reason for choosing 4-grain as the default alignment in this library.
+</p><p>
+Why read the integers in this way? Yes, a memcpy or a direct file read
+to an address will not suffer from alignment limitations, but it creates
+considerably more code. Using direct cast-to-dword-and-dereference method
+is the fastest and the most compact way to read stuff into memory. Each
+such read compiles to about five instructions, and it is possible that
+future compiler improvements will be able to reduce it to three.
+</p><p>
+Using a larger alignment than required will not even make all that much
+difference in most cases, since most data you are likely to be working
+with is already sized as a multiple of 4. So even though most of the
+files you are likely to find (if you can find any...) do not align the
+chunks at all, your chances of being able to read them with this library
+compiled with default settings are reasonably good.
+</p>
+<h2>Support</h2>
+<p>
+Report bugs through the SourceForge.net IFF library
+<a href="http://sourceforge.net/projects/iff">project page</a> with the
+standard bugtracker.
+</p>
+<hr />
+<div class="sffooter">
+    <a href="http://validator.w3.org/check?uri=referer">
+	<img src="style/valid-xhtml10.png"
+	height="31" width="88" alt="Valid XHTML 1.0!" />
+    </a>
+    <a href="http://sourceforge.net">
+	<img src="http://sourceforge.net/sflogo.php?group_id=180994&amp;type=4"
+	width="127" height="37" alt="Hosted on SourceForge.net" />
+    </a>
+</div>
+</body>
+</html>
+
