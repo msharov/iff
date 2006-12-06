@@ -76,8 +76,8 @@ static cpchar_t g_Components [] = {
 
 /* Parallel to g_Components */
 static SComponentInfo g_ComponentInfos [VectorSize(g_Components) / 3] = {
-    { 1, "Builds the shared library (if supported by the OS)" },
-    { 0, "Builds the static library" },
+    { 0, "Builds the shared library (if supported by the OS)" },
+    { 1, "Builds the static library" },
     { 0, "Compiles the library with debugging information" },
     { 0, "Store header fields in big-endian format, as in EA85" },
     { 0, "Align on 2-grain instead of 4-grain, as in EA85" },
