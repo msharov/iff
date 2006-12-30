@@ -8,7 +8,7 @@ BUILD		= @LIB_BUILD@
 ################ Programs ############################################
 
 CXX		= @CXX@ 
-LD		= @CXX@ 
+LD		= @CC@ 
 AR		= @AR@
 RANLIB		= @RANLIB@
 DOXYGEN		= @DOXYGEN@
@@ -42,8 +42,8 @@ CUSTOMLIBDIR	=@CUSTOMLIBDIR@
 #BUILD_STATIC	= 1
 #DEBUG		= 1
 
-CXXFLAGS	= ${CUSTOMINCDIR} ${PROCESSOR_OPTS} ${CXXWARNOPTS} ${COMPILER_OPTS}
-LDFLAGS		= ${CUSTOMLIBDIR} -nodefaultlibs
+CXXFLAGS	= ${CUSTOMINCDIR} ${PROCESSOR_OPTS} ${CXXWARNOPTS} ${COMPILER_OPTS} -fPIC
+LDFLAGS		= ${CUSTOMLIBDIR} -fPIC
 ifdef DEBUG
     CXXFLAGS	+= -O0 -g
 else
@@ -52,10 +52,6 @@ endif
 
 ################ Linker options ######################################
 
-ifdef BUILD_SHARED
-    CXXFLAGS	+= -fPIC
-    LDFLAGS	+= -fPIC
-endif
 SHBLDFL		= @SHBLDFL@
 LANGLIBS	= @libustl@
 LIBA		= lib${LIBNAME}.a

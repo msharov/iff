@@ -32,6 +32,7 @@ static cpchar_t g_Files [] = {
 
 /* Values substitute @VARNAME@ */
 static cpchar_t g_EnvVars [] = {
+    "CC",
     "CXX",
     "LD",
     "CXXFLAGS",
@@ -40,6 +41,7 @@ static cpchar_t g_EnvVars [] = {
 
 /*  VARIABLE	PROGRAM		HOW TO CALL	IF NOT FOUND */
 static cpchar_t g_ProgVars [] = {
+    "CC",	"gcc",		"gcc",		"@CXX@",
     "CXX",	"g++",		"g++",		"@CXX@",
     "CXX",	"c++",		"c++",		"g++",
     "LD",	"ld",		"ld",		"ld",
