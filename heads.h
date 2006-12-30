@@ -39,33 +39,34 @@ typedef uint32_t	ccount_t;	///< Type for the child count field
 #endif
 #define IFF_SFMT(s)		IFF_FMT(s[0],s[1],s[2],s[3])
 
-extern const fmt_t cfmt_Unknown;
-extern const fmt_t cfmt_CAT;
-extern const fmt_t cfmt_FORM;
-extern const fmt_t cfmt_LIST;
-extern const fmt_t cfmt_Filler;
-extern const fmt_t cfmt_Bitmap;
-extern const fmt_t cfmt_Properties;
-extern const fmt_t cfmt_BitmapHeader;
-extern const fmt_t cfmt_ColorMap;
-extern const fmt_t cfmt_ColorLookupTable;
-extern const fmt_t cfmt_ColorCycle1;
-extern const fmt_t cfmt_ColorCycle2;
-extern const fmt_t cfmt_HotSpot;
-extern const fmt_t cfmt_Sprite;
-extern const fmt_t cfmt_VoiceHeader;
-extern const fmt_t cfmt_Name;
-extern const fmt_t cfmt_Copyright;
-extern const fmt_t cfmt_Author;
-extern const fmt_t cfmt_Annotation;
-extern const fmt_t cfmt_Attack;
-extern const fmt_t cfmt_Release;
-extern const fmt_t cfmt_Generic;
-
-// Extension chunk formats
-extern const fmt_t cfmt_Vector;
-extern const fmt_t cfmt_StringTable;
-extern const fmt_t cfmt_Autodetect;
+enum {
+    cfmt_Unknown		= 0,
+    cfmt_FORM			= IFF_FMT('F','O','R','M'),
+    cfmt_LIST			= IFF_FMT('L','I','S','T'),
+    cfmt_CAT			= IFF_FMT('C','A','T',' '),
+    cfmt_Filler			= IFF_FMT(' ',' ',' ',' '),
+    cfmt_Bitmap			= IFF_FMT('I','L','B','M'),
+    cfmt_Properties		= IFF_FMT('P','R','O','P'),
+    cfmt_BitmapHeader		= IFF_FMT('B','M','H','D'),
+    cfmt_ColorMap		= IFF_FMT('C','M','A','P'),
+    cfmt_ColorLookupTable	= IFF_FMT('C','L','U','T'),
+    cfmt_ColorCycle1		= IFF_FMT('C','R','N','G'),
+    cfmt_ColorCycle2		= IFF_FMT('C','C','R','T'),
+    cfmt_HotSpot		= IFF_FMT('G','R','A','B'),
+    cfmt_Sprite			= IFF_FMT('S','P','R','T'),
+    cfmt_VoiceHeader		= IFF_FMT('V','H','D','R'),
+    cfmt_Name			= IFF_FMT('N','A','M','E'),
+    cfmt_Copyright		= IFF_FMT('(','c',')',' '),
+    cfmt_Author			= IFF_FMT('A','U','T','H'),
+    cfmt_Annotation		= IFF_FMT('A','N','N','O'),
+    cfmt_Attack			= IFF_FMT('A','T','A','K'),
+    cfmt_Release		= IFF_FMT('R','L','S','E'),
+    cfmt_Generic		= IFF_FMT('B','O','D','Y'),
+    cfmt_Vector			= IFF_FMT('V','E','C','T'),
+    cfmt_CountedContainer	= IFF_FMT('C','N','T','R'),
+    cfmt_StringTable		= IFF_FMT('S','T','R','T'),
+    cfmt_Autodetect		= IFF_FMT('A','U','T','O')
+};
 
 //----------------------------------------------------------------------
 

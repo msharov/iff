@@ -102,14 +102,14 @@ IFF_GROUP_WRITER(CAT)
 inline fmt_t PeekGroupFormat (const istream& is)
 {
     assert (is.aligned (alignof (CChunkHeader())) && "Current stream offset is not at a chunk header");
-    return (noalias (cfmt_Unknown, is.ipos() + stream_size_of(CChunkHeader())));	// this casts stream buffer to fmt_t* and dereferences it without type-punning.
+    return (*(const fmt_t*)(is.ipos() + stream_size_of(CChunkHeader())));
 }
 
 /// Inspects a chunk header at current position in \p is and returns its format without changing \p is.
 inline fmt_t PeekChunkFormat (const istream& is)
 {
     assert (is.aligned (alignof (CChunkHeader())) && "Current stream offset is not at a chunk header");
-    return (noalias (cfmt_Unknown, is.ipos()));	// this casts stream buffer to fmt_t* and dereferences it without type-punning.
+    return (*(const fmt_t*)(is.ipos()));
 }
 
 /// \brief Calls #PeekChunkFormat and returns #PeekGroupFormat for group chunks.
