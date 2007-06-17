@@ -10,7 +10,7 @@
 	<var name=Header type=ChunkHeader />
 	<var name=Data size=Size type=auto />
     </type>
-    <type name=GroupChunkData >
+    <type name=GroupChunkData format=struct >
 	<var name=ChildFormat type=fmt_t />
 	<var name=Data type=auto />
     </type>
