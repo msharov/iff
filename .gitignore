@@ -1,0 +1,5 @@
+*.[oa]
+bsconf
+Config.mk
+config.h
+.depend
