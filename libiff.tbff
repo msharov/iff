@@ -12,7 +12,7 @@
     </type>
     <type name=GroupChunkData format=struct >
 	<var name=ChildFormat type=fmt_t />
-	<var name=Data type=auto />
+	<var name=Data format=array type=Chunk />
     </type>
     <type name=GroupChunk format=struct >
 	<var name=Header type=ChunkHeader />
