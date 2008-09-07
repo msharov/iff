@@ -1,5 +1,9 @@
-*.[oa]
-bsconf
+*.o
+*.a
+*.so*
+config.status
 Config.mk
 config.h
-.depend
+bvt/[a-z][a-z][a-z][a-z0-9][a-z0-9]
+docs/html
+iff

@@ -7,13 +7,13 @@
 #define CONFIG_H_01F8552055DBC4246CF6E32537E15850
 
 // Define to the one symbol short name of this package.
-#define IFF_NAME       "@PACKAGE_NAME@"
+#define IFF_NAME	"@PKG_NAME@"
 // Define to the full name and version of this package.
-#define IFF_STRING     "@PACKAGE_NAME@ @PACKAGE_VERSION@"
+#define IFF_STRING	"@PKG_NAME@ @PKG_VERSTR@"
 // Define to the version of this package.
-#define IFF_VERSION    0x@LIB_MAJOR@@LIB_MINOR@@LIB_BUILD@
+#define IFF_VERSION	@PKG_VERSION@
 // Define to the address where bug reports for this package should be sent.
-#define IFF_BUGREPORT  "@PACKAGE_BUGREPORT@"
+#define IFF_BUGREPORT	"@PKG_BUGREPORT@"
 
 // uSTL library is required to compile. You can get the latest version
 // from http://sourceforge.net/projects/ustl
@@ -75,4 +75,3 @@
 #endif
 
 #endif
-
