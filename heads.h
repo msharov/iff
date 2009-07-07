@@ -1,12 +1,7 @@
 // This file is part of the interchange file format library.
 //
-// Copyright (C) 2003-2006 by Mike Sharov <msharov@users.sourceforge.net>
+// Copyright (C) 2003-2009 by Mike Sharov <msharov@users.sourceforge.net>
 // This file is free software, distributed under the MIT License.
-//
-// heads.h
-//
-// Chunk header formats for the Interchange File Format.
-//
 
 #ifndef HEADS_H_6AE64E742217B13E3F576C6D5A4C3292
 #define HEADS_H_6AE64E742217B13E3F576C6D5A4C3292
@@ -135,4 +130,3 @@ STD_STREAMABLE(iff::CChunkHeader)
 STD_STREAMABLE(iff::CGroupHeader)
 
 #endif
-

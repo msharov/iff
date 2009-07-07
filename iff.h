@@ -1,11 +1,18 @@
 // This file is part of the interchange file format library.
 //
-// Copyright (C) 2003-2006 by Mike Sharov <msharov@users.sourceforge.net>
+// Copyright (C) 2003-2009 by Mike Sharov <msharov@users.sourceforge.net>
 // This file is free software, distributed under the MIT License.
-//
-/// \file iff.h
+
+#ifndef IFF_H_4ABC08913E8E483F183AEAA4036657B9
+#define IFF_H_4ABC08913E8E483F183AEAA4036657B9
+
+#include "iff/utils.h"
+
+#endif
+
+/// \mainpage
 ///
-/// \brief Definitions for IFF encoding.
+/// \section intro Definitions for IFF encoding.
 ///
 /// The IFF encoding is intended as a flexible binary file format that
 /// can easily be read in full or in part by any reader. Original format
@@ -22,12 +29,3 @@
 /// to implement byte-order determination into generic read-write code.
 /// Any such context is necessarily ugly and inefficient on little-endian
 /// machines, which, let's face it, constitute 99% of all computers used.
-///
-
-#ifndef IFF_H_4ABC08913E8E483F183AEAA4036657B9
-#define IFF_H_4ABC08913E8E483F183AEAA4036657B9
-
-#include "iff/utils.h"
-
-#endif
-

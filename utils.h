@@ -1,12 +1,7 @@
 // This file is part of the interchange file format library.
 //
-// Copyright (C) 2003-2006 by Mike Sharov <msharov@users.sourceforge.net>
+// Copyright (C) 2003-2009 by Mike Sharov <msharov@users.sourceforge.net>
 // This file is free software, distributed under the MIT License.
-//
-// utils.h
-//
-// Utility functions for Interchange File Format.
-//
 
 #ifndef UTILS_H_1A23A18571746C4F243976256D15804A
 #define UTILS_H_1A23A18571746C4F243976256D15804A
@@ -155,4 +150,3 @@ IFF_GROUP_SIZE_OF(cat)
 } // namespace iff
 
 #endif
-

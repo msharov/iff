@@ -1,10 +1,7 @@
 // This file is part of the interchange file format library.
 //
-// Copyright (C) 2003-2006 by Mike Sharov <msharov@users.sourceforge.net>
+// Copyright (C) 2003-2009 by Mike Sharov <msharov@users.sourceforge.net>
 // This file is free software, distributed under the MIT License.
-//
-// xept.cc
-//
 
 #include "xept.h"
 
@@ -71,4 +68,3 @@ void XChunkSizeMismatch::info (string& msgbuf, const char* fmt) const throw()
 //----------------------------------------------------------------------
 
 } // namespace iff
-
