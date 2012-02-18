@@ -56,7 +56,7 @@ IFF_GROUP_READER(CAT)
 template <typename T>
 void WriteChunk (ostream& os, const T& v, fmt_t fmt)
 {
-    const size_t vSize = Align(stream_size_of(v), alignof(CChunkHeader()));
+    const size_t vSize = Align(stream_size_of(v), stream_align_of(CChunkHeader()));
     const CChunkHeader header (vSize, fmt);
     #ifndef NDEBUG
 	const uoff_t vStart = os.pos();
@@ -132,7 +132,7 @@ inline void SkipChunk (ostream& os, fmt_t fmt = cfmt_Generic)
 template <typename T>
 inline size_t chunk_size_of (const T& v)
 {
-    return (Align (CChunkHeader().stream_size() + stream_size_of(v), alignof (CChunkHeader())));
+    return (Align (CChunkHeader().stream_size() + stream_size_of(v), stream_align_of (iff::CChunkHeader())));
 }
 
 #define IFF_GROUP_SIZE_OF(gtype)		\
