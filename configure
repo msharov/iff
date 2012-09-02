@@ -60,7 +60,7 @@ die() { rm -f config.sed config.cpu config.cpu.c; exit; }
 
 if [ -z "$CC" ]; then
     for i in gcc g++ cc c++ c89 c99; do
-	CC=`which $i 2> /dev/null` && break
+	CC=`which $i 2>/dev/null` && break
     done
 fi
 [ -z "$CC" ] && "No C compiler found" && die
@@ -296,7 +296,7 @@ done
 for i in $PROGS; do
     pname=`expr "$i" : '\([^=]*\)=[^=]*'`
     pcall=`expr "$i" : '[^=]*=\([^=]*\)'`
-    [ -x `which $pcall` ] && echo "s/@$pname@/$pcall/g" >>config.sed
+    [ -x `which $pcall 2>/dev/null` ] && echo "s/@$pname@/$pcall/g" >>config.sed
 done
 # If nothing found in first loop, set the first pair anyway.
 for i in $PROGS; do
