@@ -2,7 +2,7 @@
 #
 # This file is free software, distributed under the MIT License.
 ######################################################################
-#### Project Configuration ###########################################
+# Project Configuration						     #
 ######################################################################
 
 PKG_NAME="package"
@@ -51,7 +51,7 @@ s/@PKG_MAJOR@/$PKG_MAJOR/g
 s/@PKG_MINOR@/$PKG_MINOR/g"
 
 ######################################################################
-#### The rest of the file is configuration code. Leave it alone. #####
+# The rest of the file is configuration code. Leave it alone.	     #
 ######################################################################
 
 die() { rm -f config.sed config.cpu config.cpu.c; exit; }
@@ -81,18 +81,17 @@ cat>config.cpu.c<<\SRC
 
 int main (void)
 {
-    static const short int boCheck=0x0001;
-    static const char boNames[2][16]={"BIG","LITTLE"};
-    uint i;
-    printf ("s/ \\?@INLINE_OPTS@/");
-    #if __GNUC__ >= 4
-	printf (" -fvisibility-inlines-hidden -fno-threadsafe-statics -fno-enforce-eh-specs");
-    #endif
-    printf ("/g\n");
+    static const short bov=1;
+    static const char boNames[2][8]={"BIG","LITTLE"};
+    printf ("s/ \\?@INLINE_OPTS@/"
+#if __GNUC__ >= 4
+    " -fvisibility-inlines-hidden -fno-threadsafe-statics -fno-enforce-eh-specs"
+#endif
+    "/g\n");
 #if __GNUC__ || defined(__GLIBC_HAVE_LONG_LONG)
     printf (SET(HAVE_LONG_LONG,1) SET(SIZE_OF_LONG_LONG,%zd), sizeof(long long));
 #endif
-#if __GNUC__ || (__WORDSIZE == 64) || defined(__ia64__)
+#if __GNUC__ || __WORDSIZE == 64
 #ifndef BSD
     printf (SET(HAVE_INT64_T,1));
 #endif
@@ -101,22 +100,16 @@ int main (void)
     if (sizeof(size_t) == sizeof(unsigned long) && sizeof(size_t) != sizeof(uint))
 #endif
 	printf (SET(SIZE_T_IS_LONG,1));
-    printf (SET(HAVE_VECTOR_EXTENSIONS,1));
     printf ("s/@BYTE_ORDER@/%s_ENDIAN/g\n"
-	SET(RETSIGTYPE,void)
-	"s/#undef const/\\/\\* #define const \\*\\//g\n"
-	"s/#undef inline/\\/\\* #define inline __inline \\*\\//g\n"
-	"s/#undef off_t/\\/\\* typedef long off_t; \\*\\//g\n"
-	"s/#undef size_t/\\/\\* typedef unsigned long size_t; \\*\\//g\n"
 	SET(SIZE_OF_CHAR,%zd)
 	SET(SIZE_OF_SHORT,%zd)
 	SET(SIZE_OF_INT,%zd)
 	SET(SIZE_OF_LONG,%zd)
 	SET(SIZE_OF_POINTER,%zd)
-	SET(SIZE_OF_SIZE_T,%zd)
-	SET(LSTAT_FOLLOWS_SLASHED_SYMLINK,1),
-	boNames [(uint)(*((const char*)&boCheck))], sizeof(char),
-	sizeof(short), sizeof(int), sizeof(long), sizeof(void*), sizeof(size_t));
+	SET(SIZE_OF_SIZE_T,%zd),
+	boNames [(uint)(*((const char*)&bov))],
+	sizeof(char), sizeof(short), sizeof(int),
+	sizeof(long), sizeof(void*), sizeof(size_t));
     return (0);
 }
 SRC
@@ -127,11 +120,9 @@ $CC -o config.cpu config.cpu.c
 #### Set host-dependent options ######################################
 
 SYSNAME=`uname|tr A-Z a-z`
-[ "`uname -m|tr A-Z a-z`" = "alpha" ] && SYSNAME="alpha"
 case "$SYSNAME" in
     *solaris*| *sun*)	SYSNAME="sun";;
     *darwin*| *osx*)	SYSNAME="mac";;
-    *alpha*)		SYSNAME="alpha";;
     *bsd*)		SYSNAME="bsd";;
     *)			SYSNAME="linux";;
 esac
@@ -149,9 +140,6 @@ if [ "$SYSNAME" = "bsd" ]; then
 fi
 if [ "$SYSNAME" = "linux" -o "$SYSNAME" = "bsd" ]; then
     echo 's/@SHBLDFL@/-shared -Wl,-soname=$1/g' >>config.sed
-elif [ "$SYSNAME" = "alpha" ]; then
-    echo "s/BUILD_SHARED	= 1 /#BUILD_SHARED	= 1/g
-	s/#BUILD_STATIC	= 1/BUILD_STATIC	= 1 /g" >>config.sed
 fi
 if [ "$SYSNAME" = "mac" ]; then
     echo 's/@SYSWARNS@/-Wno-long-double/g
@@ -163,7 +151,7 @@ if [ "$SYSNAME" = "mac" ]; then
 else
     echo 's/ \?@SYSWARNS@//g' >>config.sed
 fi
-if [ "$SYSNAME" = "alpha" -o "$SYSNAME" = "mac" ]; then
+if [ "$SYSNAME" = "mac" ]; then
     echo 's/#undef \(SIZE_OF_BOOL\)/#define \1 SIZE_OF_LONG/g' >>config.sed
 else
     echo 's/#undef \(SIZE_OF_BOOL\)/#define \1 SIZE_OF_CHAR/g' >>config.sed
@@ -185,34 +173,29 @@ PrintComponents() {
 }
 
 PrintHelp() {
-    echo "This program configures $PKG_STRING to adapt to many kinds of systems.
+    echo "This program configures $PKG_STRING
 
 Usage: configure [OPTION]...
 
 Configuration:
-  -h, --help		display this help and exit
-  -V, --version		display version information and exit
+  -h, --help		display this help
+  -V, --version		display version
 
 Installation directories:
-  --prefix=PREFIX	architecture-independent files [/usr/local]
-  --exec-prefix=EPREFIX	architecture-dependent files [PREFIX]
-  --bindir=DIR		user executables [EPREFIX/bin]
-  --sbindir=DIR		system admin executables [EPREFIX/sbin]
-  --libexecdir=DIR	program executables [EPREFIX/libexec]
-  --datadir=DIR		read-only architecture-independent data [PREFIX/share]
-  --sysconfdir=DIR	read-only single-machine data [PREFIX/etc]
-  --sharedstatedir=DIR	modifiable architecture-independent data [PREFIX/com]
-  --localstatedir=DIR	modifiable single-machine data [PREFIX/var]
-  --libdir=DIR		object code libraries [EPREFIX/lib]
-  --includedir=DIR	C header files [PREFIX/include]
-  --oldincludedir=DIR	C header files for non-gcc [/usr/include]
-  --gccincludedir=DIR	GCC internal header files [PREFIX/include]
-  --infodir=DIR		info documentation [PREFIX/info]
-  --mandir=DIR		man documentation [PREFIX/man]
+  --prefix=PREFIX	installation root [/usr/local]
+  --bindir=DIR		programs [PREFIX/bin]
+  --sbindir=DIR		admin programs [PREFIX/sbin]
+  --datadir=DIR		data [PREFIX/share]
+  --sysconfdir=DIR	configuration [PREFIX/etc]
+  --localstatedir=DIR	modifiable data [PREFIX/var]
+  --includedir=DIR	header files [PREFIX/include]
+  --libdir=DIR		libraries [PREFIX/lib]
+  --infodir=DIR		info docs [PREFIX/info]
+  --mandir=DIR		man pages [PREFIX/man]
 
 System types:
-  --build=BUILD		configure for building on BUILD [guessed]
-  --host=HOST		cross-compile to build programs to run on HOST [BUILD]
+  --build=BUILD		compiling on BUILD [guessed]
+  --host=HOST		compiling for HOST [BUILD]
 "
     PrintComponents
     echo "Report bugs to $PKG_BUGREPORT."
@@ -254,25 +237,16 @@ done
 #### Set directory prefixes ##########################################
 
 echo "s/@prefix@/${ac_var_prefix:=\/usr\/local}/g
-s/@exec_prefix@/${ac_var_exec_prefix:=$ac_var_prefix}/g
-s/@bindir@/$ac_var_exec_prefix\/bin/g
-s/@sbindir@/$ac_var_exec_prefix\/sbin/g
-s/@libexecdir@/$ac_var_exec_prefix\/libexec/g
+s/@bindir@/$ac_var_prefix\/bin/g
+s/@sbindir@/$ac_var_prefix\/sbin/g
 s/@datarootdir@/${ac_var_datarootdir:=$ac_var_prefix\/share}/g
 s/@datadir@/$ac_var_datarootdir/g
 s/@sysconfdir@/$ac_var_prefix\/etc/g
-s/@sharedstatedir@/$ac_var_prefix\/com/g
 s/@localstatedir@/$ac_var_prefix\/var/g
 s/@includedir@/${ac_var_includedir:=$ac_var_prefix\/include}/g
-s/@oldincludedir@/${ac_var_oldincludedir:=\/usr\/include}/g
 s/@docdir@/${ac_var_docdir:=$ac_var_datarootdir\/doc\/$PKG_NAME}/g
 s/@infodir@/$ac_var_datarootdir\/info/g
-s/@htmldir@/$ac_var_docdir/g
-s/@dvidir@/$ac_var_docdir/g
-s/@pdfdir@/$ac_var_docdir/g
-s/@psdir@/$ac_var_docdir/g
-s/@libdir@/${ac_var_libdir:=$ac_var_exec_prefix\/lib}/g
-s/@localedir@/$ac_var_datarootdir\/locale/g
+s/@libdir@/${ac_var_libdir:=$ac_var_prefix\/lib}/g
 s/@mandir@/$ac_var_datarootdir\/man/g
 s/@gccincludedir@/${ac_var_gccincludedir:=`echo $PINCDIR | sed 's/\//\\\&/g'`}/g
 s/@gcclibdir@/${ac_var_gcclibdir:=`echo $PLIBDIR | sed 's/\//\\\&/g'`}/g
@@ -291,7 +265,7 @@ fi
 
 SubHeadLibsProgs() {
 local INCPATH LIBPATH LIBSUFFIX found pname pcall esciv
-INCPATH="$ac_var_oldincludedir $ac_var_includedir $ac_var_gccincludedir $ac_var_customincdir"
+INCPATH="$ac_var_includedir $ac_var_gccincludedir $ac_var_customincdir"
 INCPATH=`echo $INCPATH | sed 's/\\\\//g'`
 for i in $HEADERS; do
     for p in $INCPATH; do
