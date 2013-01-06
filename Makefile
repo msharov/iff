@@ -22,7 +22,7 @@ ALLTGTS	+= ${SLIBT} ${SLIBS} ${SLIBL}
 all:	${SLIBT} ${SLIBS} ${SLIBL}
 ${SLIBT}:	${OBJS}
 	@echo "Linking $(notdir $@) ..."
-	@${LD} -fPIC ${LDFLAGS} $(call slib_flags,$(subst $O,,${SLIBS})) -o $@ $^ ${LIBS}
+	@${CXX} -fPIC ${LDFLAGS} $(call slib_flags,$(subst $O,,${SLIBS})) -o $@ $^ ${LIBS}
 ${SLIBS} ${SLIBL}:	${SLIBT}
 	@(cd $(dir $@); rm -f $(notdir $@); ln -s $(notdir $<) $(notdir $@))
 
@@ -109,25 +109,6 @@ clean:
 
 html:	${SRCS} ${INCS} ${NAME}doc.in
 	@${DOXYGEN} ${NAME}doc.in
-
-ifdef MAJOR
-DISTVER	:= ${MAJOR}.${MINOR}
-DISTNAM	:= ${NAME}-${DISTVER}
-DISTLSM	:= ${DISTNAM}.lsm
-DISTTAR	:= ${DISTNAM}.tar.bz2
-
-dist:
-	@echo "Generating ${DISTTAR} and ${DISTLSM} ..."
-	@mkdir .${DISTNAM}
-	@rm -f ${DISTTAR}
-	@cp -r * .${DISTNAM} && mv .${DISTNAM} ${DISTNAM}
-	@+${MAKE} -sC ${DISTNAM} maintainer-clean
-	@tar jcf ${DISTTAR} ${DISTNAM} && rm -rf ${DISTNAM}
-	@echo "s/@version@/${DISTVER}/" > ${DISTLSM}.sed
-	@echo "s/@date@/`date +%F`/" >> ${DISTLSM}.sed
-	@echo -n "s/@disttar@/`du -h --apparent-size ${DISTTAR}`/" >> ${DISTLSM}.sed;
-	@sed -f ${DISTLSM}.sed docs/${NAME}.lsm > ${DISTLSM} && rm -f ${DISTLSM}.sed
-endif
 
 distclean:	clean
 	@rm -f Config.mk config.h config.status ${NAME}

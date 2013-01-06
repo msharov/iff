@@ -23,13 +23,11 @@ XFormatMismatch::XFormatMismatch (const char* typeName, uoff_t offset, fmt_t exp
 void XFormatMismatch::info (string& msgbuf, const char* fmt) const throw()
 {
     if (!fmt) fmt = "iff chunk %s at 0x%zX has format %08X (%c%c%c%c), expected %08X (%c%c%c%c)";
-    char expstr[sizeof(fmt_t)]; *(fmt_t*)(expstr) = m_Expected;
-    char actstr[sizeof(fmt_t)]; *(fmt_t*)(actstr) = m_Actual;
-    for (size_t i = 0; i < sizeof(fmt_t); ++ i) {
-	if (!isprint(expstr[i]))
-	    expstr[i] = '.';
-	if (!isprint(actstr[i]))
-	    actstr[i] = '.';
+    char expstr[sizeof(fmt_t)], actstr[sizeof(fmt_t)];
+    for (size_t i = 0; i < sizeof(fmt_t); ++i) {
+	char ec = m_Expected >> (i*8), ac = m_Actual >> (i*8);
+	expstr[i] = isprint(ec) ? ec : '.';
+	actstr[i] = isprint(ac) ? ac : '.';
     }
     char dmname [256];
     strncpy (dmname, m_TypeName, VectorSize(dmname));
