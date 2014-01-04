@@ -1,11 +1,12 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-    <title>Interchange File Format Library</title>
-    <link rel="stylesheet" type="text/css" href="style/default.css" />
+    <link rel="stylesheet" type="text/css" href="style.css" />
     <meta http-equiv="Content-Type" content="text/xhtml+xml; charset=ISO-8859-1" />
-    <meta name="verify-v1" content="/fXe51SIkBhDzzEnY6l1J+PzhPSgYDL33GBy6ldjxYo=" />
+    <title>Interchange File Format Library</title>
+    <meta name="Keywords" content="iff, file format" />
     <meta name="author" content="Mike Sharov" />
+    <meta name="date" content="2014-01-04" />
 </head>
 <body>
 <div class="banner">
@@ -29,21 +30,22 @@ directly writing many of your objects as chunks and containers.
 </p>
 <h2>Installation</h2>
 <p>
-This library can be downloaded from SourceForge, as can its sole prerequisite:
-</p><ul>
-    <li><a href="https://sourceforge.net/project/showfiles.php?group_id=180994">libiff</a> - The library source package.</li>
-    <li><a href="https://sourceforge.net/project/showfiles.php?group_id=76798">uSTL</a> - An STL implementation, required.</li>
-</ul><p>
+Building this library is a fairly standard procedure. Download the package from
+<a href="https://github.com/msharov/iff/releases/latest">https://github.com/msharov/iff/releases/latest</a>.
+Make sure you have the necessary dependencies: C++ compiler, such as gcc 4.6+, the
+<a href="https://github.com/msharov/ustl/releases/latest">uSTL</a> library
+version 1.6 or higher.
+</p><p>
 First, unpack and install uSTL, as described in its documentation.
-Unpack libiff and run <kbd>./configure; make install</kbd>, which will
-install the library to /usr/local/lib and headers to /usr/local/include.
-<kbd>./configure --help</kbd> lists available configuration options,
-in the usual autoconf fashion. The one thing to be aware of is that
-by default the library will not be completely conforming to EA85
-specification. Why that is so, and why you should take the default options
-anyway, is discussed in detail in the next section. If you really want
-to use the original EA85 format, you can to pass <kbd>--with-bigendian
---with-2grain</kbd> to <tt>configure</tt>.
+Unpack libiff and run <kbd>./configure &amp;&amp; make install</kbd>,
+which will install the library to /usr/local/lib and headers to
+/usr/local/include. <kbd>./configure --help</kbd> lists available
+configuration options, in the usual autoconf fashion. The one thing
+to be aware of is that by default the library will not be completely
+conforming to EA85 specification. Why that is so, and why you should
+take the default options anyway, is discussed in detail in the next
+section. If you really want to use the original EA85 format, you can to
+pass <kbd>--with-bigendian --with-2grain</kbd> to <tt>configure</tt>.
 </p>
 <h2>Usage</h2>
 <p>
@@ -65,111 +67,86 @@ through uSTL streams. To do that you'll need to define three methods,
 flow operator overrides with a <tt>STD_STREAMABLE</tt> macro. Here is
 a typical example:
 </p><pre>
+    #include &lt;iff.h&gt;	// iff header includes ustl.h, but doesn't use the namespace.
+    using namespace ustl;	// it is recommended to leave iff:: namespace on.
 
-#include &lt;iff.h&gt;	// iff header includes ustl.h, but doesn't use the namespace.
-using namespace ustl;	// it is recommended to leave iff:: namespace on.
+    // Since the object is simple, and contains no other objects, we'll
+    // make it a simple chunk. The chunk format is a 4 byte integer. In a
+    // hex editor you'll see PLYR at the beginning of the object making it
+    // easy to find when you want to hack something in it.
+    enum { fmt_PlayerStats = IFF_FMT('P','L','Y','R') };     
 
-/// Stores player's vital statistics.
-class CPlayerStats {
-public:
-    void        read (istream&amp; is);
-    void        write (ostream&amp; os) const;
-    size_t      stream_size (void) const;
-private:
-    uint16_t    m_HP;
-    uint16_t    m_MaxHP;
-    uint16_t    m_Mana;
-    uint16_t    m_MaxMana;
-};
+    /// Stores player's vital statistics.
+    class CPlayerStats {
+    public:
+	void        read (istream&amp; is)
+			{ is &gt;&gt; _hp &gt;&gt; _maxhp &gt;&gt; _mana &gt;&gt; _maxmana; }
+	void        write (ostream&amp; os) const
+			{ os &lt;&lt; _hp &lt;&lt; _maxhp &lt;&lt; _mana &lt;&lt; _maxmana; }
+	size_t      stream_size (void) const
+			{ return (stream_size_of (_hp) +	// This evaluates at compile time to 8,
+				  stream_size_of (_maxhp) +	// so making this function inline is
+				  stream_size_of (_mana) +	// usually a good idea.
+				  stream_size_of (_maxmana)); }
+    private:
+	uint16_t    _hp;
+	uint16_t    _maxhp;
+	uint16_t    _mana;
+	uint16_t    _maxmana;
+    };
 
-// Since the object is simple, and contains no other objects,
-//         we'll make it a simple chunk.
-enum {	// Define a chunk format for writing this object.
-    fmt_PlayerStats = IFF_FMT('S','T','A','T')
-};      // In a hex editor you'll see STAT at the beginning of the object
-        // making it easy to find when you want to hack something in it.
-
-/// Reads the object from stream \p is
-void CPlayerStats::read (istream&amp; is)
-{
-    is &gt;&gt; m_HP &gt;&gt; m_MaxHP &gt;&gt; m_Mana &gt;&gt; m_MaxMana;
-}
-
-/// Writes the object to stream \p os.
-void CPlayerStats::write (ostream&amp; os) const
-{
-    os &lt;&lt; m_HP &lt;&lt; m_MaxHP &lt;&lt; m_Mana &lt;&lt; m_MaxMana;
-}
-
-/// Returns the size of the written object
-inline size_t CPlayerStats::stream_size (void) const
-{
-    return (stream_size_of (m_HP) +	// This evaluates at compile time to 8,
-	    stream_size_of (m_MaxHP) +	// so making this function inline is
-            stream_size_of (m_Mana) +	// usually a good idea.
-	    stream_size_of (m_MaxMana));
-}
-
-STD_STREAMABLE(CPlayerStats)
+    STD_STREAMABLE(CPlayerStats)
 </pre><p>
 This needs to happen in all your objects. Make them streamable and define
 a format id. Then, to save everything, use <tt>iff::Read/Write</tt>
-functions from <tt>iff/utils.h</tt> (no, you don't need to include it
-separately), like this:
+functions from <tt>iff/utils.h</tt> like this:
 </p><pre>
+    void GameObject::SavePlayer (const string&amp; filename) const
+    {
+	memblock buf (iff::form_size_of (m_Player));	// A buffer to store the file
+	ostream os (buf);					// and a stream to write the player object to.
+	//
+	// This writes it as a FORM, which just happens to be one of the three
+	// allowable top-level chunk types. When a file starts with FORM, LIST,
+	// or CAT, programs know it is an IFF file. The top level chunk should
+	// contain the entire file, and nothing should follow it.
+	//
+	iff::WriteFORM (os, _player, fmt_MyGamePlayer);
+	buf.write_file ("player.sav");
+    }
 
-void SomeDocumentObject::SavePlayer (const string&amp; filename) const
-{
-    // uSTL streams work on memory blocks, not on files directly,
-    // so the needed buffer has to be preallocated.
-    //
-    memblock buf (iff::form_size_of (m_Player));
-    //
-    // We'll need a stream to write the player object to.
-    //
-    ostream os (buf);
-    //
-    // This writes it as a FORM, which just happens to be one of the three
-    // allowable top-level chunk types. When a file starts with FORM, LIST,
-    // or CAT, programs know it is an IFF file. The top level chunk should
-    // contain the entire file, and nothing should follow it.
-    //
-    iff::WriteFORM (os, m_Player, fmt_MyGamePlayer);
-    buf.write_file ("player.sav");
-}
+    // The following will be in the player class
 
-// The following will be in the player class
+    /// Reads the player object from stream \p is
+    size_t CPlayer::stream_size (istream&amp; is)
+    {
+	// Player is a compound object, a FORM, so it can only contain other
+	// chunks and FORMs, not simple values.
+	return (iff::chunk_size_of (_name) +	// _name is a string
+		iff::chunk_size_of (_stats) +	// CPlayerStats object
+		iff::vector_size_of (_inventory) + // a vector, chunk saved
+		// Quests is a special manager object that writes each quest
+		// as a chunk or a form with some common settings.
+		iff::list_size_of (_quests));
+    }
 
-/// Reads the player object from stream \p is
-size_t CPlayer::stream_size (istream&amp; is)
-{
-    // Player is a compound object, a FORM, so it can only contain other
-    // chunks and FORMs, not simple values.
-    return (iff::chunk_size_of (m_Name) +	// m_Name is a string
-	    iff::chunk_size_of (m_Stats) +	// CPlayerStats object
-	    iff::vector_size_of (m_Inventory) + // a vector, chunk saved
-	    // Quests is a special manager object that writes each quest
-	    // as a chunk or a form with some common settings.
-	    iff::list_size_of (m_Quests));
-}
+    /// Reads the player object from stream \p is
+    void CPlayer::write (ostream&amp; os) const
+    {
+	iff::WriteChunk (os, _name, fmt_PlayerName);
+	iff::WriteChunk (os, _stats, fmt_PlayerStats);
+	iff::WriteVector (os, _inventory, fmt_Inventory);
+	iff::WriteLIST (os, _quests, fmt_Quests);
+    }
 
-/// Reads the player object from stream \p is
-void CPlayer::write (ostream&amp; os) const
-{
-    iff::WriteChunk (os, m_Name, fmt_PlayerName);
-    iff::WriteChunk (os, m_Stats, fmt_PlayerStats);
-    iff::WriteVector (os, m_Inventory, fmt_Inventory);
-    iff::WriteLIST (os, m_Quests, fmt_Quests);
-}
-
-/// Reads the player object from stream \p is
-void CPlayer::read (istream&amp; is)
-{
-    iff::ReadChunk (is, m_Name, fmt_PlayerName);
-    iff::ReadChunk (is, m_Stats, fmt_PlayerStats);
-    iff::ReadVector (is, m_Inventory, fmt_Inventory);
-    iff::ReadLIST (is, m_Quests, fmt_Quests);
-}
+    /// Reads the player object from stream \p is
+    void CPlayer::read (istream&amp; is)
+    {
+	iff::ReadChunk (is, _name, fmt_PlayerName);
+	iff::ReadChunk (is, _stats, fmt_PlayerStats);
+	iff::ReadVector (is, _inventory, fmt_Inventory);
+	iff::ReadLIST (is, _quests, fmt_Quests);
+    }
 </pre><p>
 The above is enough to get you a structured file with format checking
 on read.  If you try reading something that is not a player savegame file
@@ -186,24 +163,23 @@ Well, some companies are like that. But with IFF, you have the formats
 and sizes in each header, so you can make a more resilient read that will
 support new and old formats alike:
 </p><pre>
-
-/// Reads the player object from stream \p is
-void CPlayer::read (istream&amp; is)
-{
-    while (is.remaining()) {
-        //
-        // The Peek function will get the format without moving the stream
-	// pointer, handling also the case of compound chunks.
-	//
-        switch (iff::PeekChunkOrGroupFormat (is)) {
-            case fmt_PlayerName:  iff::ReadChunk (is, m_Name,      fmt_PlayerName);  break;
-	    case fmt_PlayerStats: iff::ReadChunk (is, m_Stats,     fmt_PlayerStats); break;
-	    case fmt_Inventory:   iff::ReadVector(is, m_Inventory, fmt_Inventory);   break;
-	    case fmt_Quests:      iff::ReadLIST  (is, m_Quests,    fmt_Quests);      break;
-	    default:              iff::SkipChunk (is);                               break;
+    /// Reads the player object from stream \p is
+    void CPlayer::read (istream&amp; is)
+    {
+	while (is.remaining()) {
+	    //
+	    // The Peek function will get the format without moving the stream
+	    // pointer, handling also the case of compound chunks.
+	    //
+	    switch (iff::PeekChunkOrGroupFormat (is)) {
+		case fmt_PlayerName:  iff::ReadChunk (is, _name,      fmt_PlayerName);  break;
+		case fmt_PlayerStats: iff::ReadChunk (is, _stats,     fmt_PlayerStats); break;
+		case fmt_Inventory:   iff::ReadVector(is, _inventory, fmt_Inventory);   break;
+		case fmt_Quests:      iff::ReadLIST  (is, _quests,    fmt_Quests);      break;
+		default:              iff::SkipChunk (is);                               break;
+	    }
 	}
     }
-}
 </pre><p>
 This way missing chunks will not cause a problem, resulting in defaults
 being used for the corresponding object, and neither will new ones, which
@@ -265,16 +241,17 @@ Therefore, it is much better to modify the format a little to fit modern
 hardware rather than the old Motorola 68000 for which EA85 IFF standard
 was designed.
 </p><p>
-Why use little-endian byte order? Because every desktop computer in the
-world, except for a few aging Macs here and there, uses little-endian
-integers. Back in 1985 there were quite a few big-endian machines,
-including Motorola 68000, and many people thought that big-endian byte
-order will eventually become the standard as Intel heretics convert to the
-true faith. This was particularly true in academic circles, which were
-aggressively lobbied by Sun and its hardware obtained with substatial
-educational institution discounts. Over time, the exact opposite has
-happened, and the only big-endian machines remaining are gathering dust
-in server rooms and antique university computer labs.
+Why use little-endian byte order? Because pretty much every computer
+in the world uses little-endian integers today. Back in 1985 there were
+quite a few big-endian machines, including Motorola 68000, and many people
+thought that big-endian byte order will eventually become the standard as
+Intel heretics convert to the true faith. This was particularly true in
+academic circles, which were aggressively lobbied by Sun and its hardware
+obtained with substatial educational institution discounts. Over time,
+the exact opposite has happened, and the only big-endian machines
+remaining are gathering dust in server rooms and antique university
+computer labs. The rest of us use Intel or ARM processors, both of which
+are little-endian.
 </p><p>
 As a result, it makes far more sense to use little-endian integers
 everywhere, furthering the entrenchment of this now almost universal
@@ -285,7 +262,7 @@ completely and all that extra byteswapping work will no longer be
 necessary. Until then, it's your choice; will you stick to an old format
 for the sake of conformity to an obsolete standard, or embrace the future
 and set a new standard that best fits modern hardware? Both options are
-supported by the library, via configure, so it's your choice.
+supported by the library, via configure.
 </p><p>
 The second contenuous issue is chunk alignment. The EA85 standard
 specifies 2-grain alignment because the 68000 processor could not access
@@ -304,28 +281,16 @@ future compiler improvements will be able to reduce it to three.
 </p><p>
 Using a larger alignment than required will not even make all that much
 difference in most cases, since most data you are likely to be working
-with is already sized as a multiple of 4. So even though most of the
-files you are likely to find (if you can find any...) do not align the
-chunks at all, your chances of being able to read them with this library
-compiled with default settings are reasonably good.
+with is already sized as a multiple of 4. Microsoft's RIFF format is
+the one example known to exist and to already be 4-grain aligned. So
+even though most of the files you are likely to find (if you can find
+any...) do not align the chunks at all, your chances of being able to read
+them with this library compiled with default settings are reasonably good.
 </p>
 <h2>Support</h2>
 <p>
-Report bugs through the SourceForge.net IFF library
-<a href="http://sourceforge.net/projects/iff">project page</a> with the
-standard bugtracker.
+Problems should be reported using <a href="https://github.com/msharov/iff/issues">Github project trackers</a>
+reachable from the <a href="https://github.com/msharov/iff">library project page.</a>
 </p>
-<hr />
-<div class="sffooter">
-    <a href="http://validator.w3.org/check?uri=referer">
-	<img src="style/valid-xhtml10.png"
-	height="31" width="88" alt="Valid XHTML 1.0!" />
-    </a>
-    <a href="http://sourceforge.net">
-	<img src="http://sourceforge.net/sflogo.php?group_id=180994&amp;type=4"
-	width="127" height="37" alt="Hosted on SourceForge.net" />
-    </a>
-</div>
 </body>
 </html>
-

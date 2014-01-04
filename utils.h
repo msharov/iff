@@ -1,11 +1,9 @@
 // This file is part of the interchange file format library.
 //
-// Copyright (C) 2003-2009 by Mike Sharov <msharov@users.sourceforge.net>
+// Copyright (c) 2003 by Mike Sharov <msharov@users.sourceforge.net>
 // This file is free software, distributed under the MIT License.
 
-#ifndef UTILS_H_1A23A18571746C4F243976256D15804A
-#define UTILS_H_1A23A18571746C4F243976256D15804A
-
+#pragma once
 #include "xept.h"
 
 namespace iff {
@@ -148,5 +146,3 @@ IFF_GROUP_SIZE_OF(cat)
 //----------------------------------------------------------------------
 
 } // namespace iff
-
-#endif

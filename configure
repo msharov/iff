@@ -17,11 +17,11 @@ FILES="Config.mk config.h"
 COMPONENTS='
 {
 name=[with-shared]
-desc=[	Builds the shared library (if supported by the OS)]
-seds=[s/#^\(BUILD_SHARED\)/\1/]
+desc=[	Build the shared library (if supported by the OS)]
+seds=[s/^#\(BUILD_SHARED\)/\1/]
 }{
-name=[with-static]
-desc=[	Builds the static library]
+name=[without-static]
+desc=[	Do not build the static library]
 seds=[s/^\(BUILD_STATIC\)/#\1/]
 }{
 name=[with-debug]
@@ -58,7 +58,7 @@ PKG_STRING="$PKG_NAME $PKG_VERSTR"
 
 # Miscellaneous substitutions
 CUSTSUBS="s/@PKG_NAME@/$PKG_NAME/g
-s/@PKG_VERSION@/"0x$PKG_MAJOR${PKG_MINOR}0"/g
+s/@PKG_VERSION@/"0x$PKG_MAJOR${PKG_MINOR}"/g
 s/@PKG_VERSTR@/$PKG_VERSTR/g
 s/@PKG_TARNAME@/$PKG_NAME/g
 s/@PKG_STRING@/$PKG_STRING/g
@@ -76,7 +76,7 @@ die() { rm -f config.sed config.cpu config.cpu.c; exit; }
 #### Compile the configurator and generate initial config.sed ########
 
 if [ -z "$CC" ]; then
-    for i in gcc g++ cc c++ c89 c99; do
+    for i in g++ clang++ gcc cc; do
 	CC=`which $i 2>/dev/null` && break
     done
 fi
@@ -87,52 +87,6 @@ PSTDDEF=`echo "#include <stddef.h>"|$CC -E -|grep stddef.h|head -n1|cut -d' ' -f
 PINCDIR=`dirname $PSTDDEF`
 PLIBDIR=`dirname $PINCDIR`
 if [ -d $PLIBDIR/lib ]; then PLIBDIR=$PLIBDIR/lib; fi
-
-# Create and build the C configurator
-cat>config.cpu.c<<\SRC
-#include <stdio.h>
-#include <sys/types.h>
-#include <sys/param.h>
-
-#define SET(c,v) "s/#undef \\(" #c "\\)/#define \\1 " #v "/g\n"
-
-int main (void)
-{
-    static const short bov=1;
-    static const char boNames[2][8]={"BIG","LITTLE"};
-    printf ("s/ \\?@INLINE_OPTS@/"
-#if __GNUC__ >= 4
-    " -fvisibility-inlines-hidden -fno-threadsafe-statics -fno-enforce-eh-specs"
-#endif
-    "/g\n");
-#if __GNUC__ || defined(__GLIBC_HAVE_LONG_LONG)
-    printf (SET(HAVE_LONG_LONG,1) SET(SIZE_OF_LONG_LONG,%zd), sizeof(long long));
-#endif
-#if __GNUC__ || __WORDSIZE == 64
-#ifndef BSD
-    printf (SET(HAVE_INT64_T,1));
-#endif
-#endif
-#ifndef __APPLE__
-    if (sizeof(size_t) == sizeof(unsigned long) && sizeof(size_t) != sizeof(uint))
-#endif
-	printf (SET(SIZE_T_IS_LONG,1));
-    printf ("s/@BYTE_ORDER@/%s_ENDIAN/g\n"
-	SET(SIZE_OF_CHAR,%zd)
-	SET(SIZE_OF_SHORT,%zd)
-	SET(SIZE_OF_INT,%zd)
-	SET(SIZE_OF_LONG,%zd)
-	SET(SIZE_OF_POINTER,%zd)
-	SET(SIZE_OF_SIZE_T,%zd),
-	boNames [(uint)(*((const char*)&bov))],
-	sizeof(char), sizeof(short), sizeof(int),
-	sizeof(long), sizeof(void*), sizeof(size_t));
-    return (0);
-}
-SRC
-$CC -o config.cpu config.cpu.c
-[ ! -x config.cpu ] && echo "Configurator build failed" && die
-./config.cpu > config.sed
 
 #### Set host-dependent options ######################################
 
@@ -282,7 +236,7 @@ fi
 
 SubHeadLibsProgs() {
 local INCPATH LIBPATH LIBSUFFIX found pname pcall esciv
-INCPATH="$ac_var_includedir $ac_var_gccincludedir $ac_var_customincdir"
+INCPATH="$ac_var_includedir $ac_var_gccincludedir $ac_var_customincdir /usr/include"
 INCPATH=`echo $INCPATH | sed 's/\\\\//g'`
 for i in $HEADERS; do
     for p in $INCPATH; do

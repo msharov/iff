@@ -1,11 +1,9 @@
 // This file is part of the interchange file format library.
 //
-// Copyright (C) 2003-2009 by Mike Sharov <msharov@users.sourceforge.net>
+// Copyright (c) 2003 by Mike Sharov <msharov@users.sourceforge.net>
 // This file is free software, distributed under the MIT License.
 
-#ifndef HEADS_H_6AE64E742217B13E3F576C6D5A4C3292
-#define HEADS_H_6AE64E742217B13E3F576C6D5A4C3292
-
+#pragma once
 #include "config.h"
 
 /// Contains functions for dealing with IFF formatted files.
@@ -128,5 +126,3 @@ struct SProp {
 ALIGNOF(iff::CChunkHeader, IFF_GRAIN)
 STD_STREAMABLE(iff::CChunkHeader)
 STD_STREAMABLE(iff::CGroupHeader)
-
-#endif

@@ -3,12 +3,8 @@
 // Copyright (C) 2003-2009 by Mike Sharov <msharov@users.sourceforge.net>
 // This file is free software, distributed under the MIT License.
 
-#ifndef IFF_H_4ABC08913E8E483F183AEAA4036657B9
-#define IFF_H_4ABC08913E8E483F183AEAA4036657B9
-
+#pragma once
 #include "iff/utils.h"
-
-#endif
 
 /// \mainpage
 ///

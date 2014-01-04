@@ -1,11 +1,9 @@
 // This file is part of the interchange file format library.
 //
-// Copyright (C) 2003-2009 by Mike Sharov <msharov@users.sourceforge.net>
+// Copyright (c) 2003 by Mike Sharov <msharov@users.sourceforge.net>
 // This file is free software, distributed under the MIT License.
 
-#ifndef XEPT_H_1166C45177F868B740FD8B3221078767
-#define XEPT_H_1166C45177F868B740FD8B3221078767
-
+#pragma once
 #include "heads.h"
 
 namespace iff {
@@ -43,5 +41,3 @@ protected:
 };
 
 } // namespace iff
-
-#endif
