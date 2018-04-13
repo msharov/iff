@@ -3,133 +3,137 @@
 ################ Source files ##########################################
 
 SRCS	:= $(wildcard *.cc)
-INCS	:= $(wildcard *.h)
+INCS	:= $(filter-out ${NAME}.h,$(sort $(wildcard *.h) config.h))
 OBJS	:= $(addprefix $O,$(SRCS:.cc=.o))
 DEPS	:= ${OBJS:.o=.d}
+CONFS	:= Config.mk config.h ${NAME}.pc
+ONAME   := $(notdir $(abspath $O))
+DOCS	:= $(notdir $(wildcard doc/*))
+LIBA_R	:= $Olib${NAME}.a
+LIBA_D	:= $Olib${NAME}_d.a
+ifdef DEBUG
+LIBA	:= ${LIBA_D}
+else
+LIBA	:= ${LIBA_R}
+endif
 
 ################ Compilation ###########################################
 
-.PHONY: all clean check distclean maintainer-clean
-
-all:	Config.mk config.h ${NAME}/config.h
-ALLTGTS	:= Config.mk config.h ${NAME}/config.h
-
-SLIBL	:= $O$(call slib_lnk,${NAME})
-SLIBS	:= $O$(call slib_son,${NAME})
-SLIBT	:= $O$(call slib_tgt,${NAME})
-ifdef BUILD_SHARED
-ALLTGTS	+= ${SLIBT} ${SLIBS} ${SLIBL}
-
-all:	${SLIBT} ${SLIBS} ${SLIBL}
-${SLIBT}:	${OBJS}
-	@echo "Linking $(notdir $@) ..."
-	@${LD} -fPIC ${LDFLAGS} $(call slib_flags,$(subst $O,,${SLIBS})) -o $@ $^ ${LIBS}
-${SLIBS} ${SLIBL}:	${SLIBT}
-	@(cd $(dir $@); rm -f $(notdir $@); ln -s $(notdir $<) $(notdir $@))
-
-endif
-ifdef BUILD_STATIC
-LIBA	:= $Olib${NAME}.a
-ALLTGTS	+= ${LIBA}
+.PHONY: all clean distclean maintainer-clean
 
 all:	${LIBA}
+
 ${LIBA}:	${OBJS}
 	@echo "Linking $@ ..."
 	@rm -f $@
-	@${AR} qc $@ ${OBJS}
+	@${AR} qc $@ $^
 	@${RANLIB} $@
-endif
 
 $O%.o:	%.cc
 	@echo "    Compiling $< ..."
-	@[ -d $(dir $@) ] || mkdir -p $(dir $@)
 	@${CXX} ${CXXFLAGS} -MMD -MT "$(<:.cc=.s) $@" -o $@ -c $<
 
 %.s:	%.cc
 	@echo "    Compiling $< to assembly ..."
 	@${CXX} ${CXXFLAGS} -S -o $@ -c $<
 
-include bvt/Module.mk
-
 ################ Installation ##########################################
 
-.PHONY:	install uninstall install-incs uninstall-incs
+.PHONY:	install uninstall
 
-####### Install headers
-
-ifdef INCDIR	# These ifdefs allow cold bootstrap to work correctly
-LIDIR	:= ${INCDIR}/${NAME}
-INCSI	:= $(addprefix ${LIDIR}/,$(filter-out ${NAME}.h,${INCS}))
-RINCI	:= ${LIDIR}.h
-
-install:	install-incs
-install-incs: ${INCSI} ${RINCI}
-${INCSI}: ${LIDIR}/%.h: %.h
+ifdef INCDIR
+INCSI		:= $(addprefix ${INCDIR}/${NAME}/,${INCS})
+INCR		:= ${INCDIR}/${NAME}.h
+install:	${INCSI} ${INCR}
+${INCSI}: ${INCDIR}/${NAME}/%.h: %.h
 	@echo "Installing $@ ..."
 	@${INSTALLDATA} $< $@
-${RINCI}: ${NAME}.h
+${INCR}:	${NAME}.h
 	@echo "Installing $@ ..."
 	@${INSTALLDATA} $< $@
 uninstall:	uninstall-incs
 uninstall-incs:
-	@if [ -d ${LIDIR} -o -f ${RINCI} ]; then\
-	    echo "Removing ${LIDIR}/ and ${LIDIR}.h ...";\
-	    rm -f ${INCSI} ${RINCI};\
-	    rmdir ${LIDIR};\
+	@if [ -d ${INCDIR}/${NAME} ]; then\
+	    echo "Removing headers ...";\
+	    rm -f ${INCSI} ${INCR};\
+	    ${RMPATH} ${INCDIR}/${NAME};\
 	fi
 endif
-
-####### Install libraries (shared and/or static)
-
 ifdef LIBDIR
-ifdef BUILD_SHARED
-LIBTI	:= ${LIBDIR}/$(notdir ${SLIBT})
-LIBLI	:= ${LIBDIR}/$(notdir ${SLIBS})
-LIBSI	:= ${LIBDIR}/$(notdir ${SLIBL})
-install:	${LIBTI} ${LIBLI} ${LIBSI}
-${LIBTI}:	${SLIBT}
+LIBAI		:= ${LIBDIR}/$(notdir ${LIBA})
+LIBAI_R		:= ${LIBDIR}/$(notdir ${LIBA_R})
+LIBAI_D		:= ${LIBDIR}/$(notdir ${LIBA_D})
+install:        ${LIBAI}
+${LIBAI}:       ${LIBA}
 	@echo "Installing $@ ..."
 	@${INSTALLLIB} $< $@
-${LIBLI} ${LIBSI}: ${LIBTI}
-	@(cd ${LIBDIR}; rm -f $@; ln -s $(notdir $<) $(notdir $@))
+uninstall:	uninstall-lib
+uninstall-lib:
+	@if [ -f ${LIBAI_R} -o -f ${LIBAI_D} ]; then\
+	    echo "Removing ${LIBAI} ...";\
+	    rm -f ${LIBAI_R} ${LIBAI_D};\
+	fi
 endif
-ifdef BUILD_STATIC
-LIBAI	:= ${LIBDIR}/$(notdir ${LIBA})
-install:	${LIBAI}
-${LIBAI}:	${LIBA}
+ifdef DOCDIR
+PKGDOCDIR	:= ${DOCDIR}/${NAME}
+DOCSI		:= $(addprefix ${PKGDOCDIR}/,${DOCS})
+install:	${DOCSI}
+${DOCSI}: ${PKGDOCDIR}/%: doc/%
 	@echo "Installing $@ ..."
-	@${INSTALLLIB} $< $@
+	@${INSTALLDATA} $< $@
+uninstall:	uninstall-docs
+uninstall-docs:
+	@if [ -d ${PKGDOCDIR} ]; then\
+	    echo "Removing documentation ...";\
+	    rm -f ${DOCSI};\
+	    ${RMPATH} ${PKGDOCDIR};\
+	fi
 endif
+ifdef PKGCONFIGDIR
+PCI	:= ${PKGCONFIGDIR}/${NAME}.pc
+install:	${PCI}
+${PCI}:	${NAME}.pc
+	@echo "Installing $@ ..."
+	@${INSTALLDATA} $< $@
 
-uninstall:
-	@echo "Removing library from ${LIBDIR} ..."
-	@rm -f ${LIBTI} ${LIBLI} ${LIBSI} ${LIBAI}
+uninstall:	uninstall-pc
+uninstall-pc:
+	@if [ -f ${PCI} ]; then echo "Removing ${PCI} ..."; rm -f ${PCI}; fi
 endif
 
 ################ Maintenance ###########################################
 
+include test/Module.mk
+
 clean:
-	@if [ -d $O ]; then\
-	    rm -f ${SLIBS} ${SLIBT} ${SLIBL} ${LIBA} ${OBJS} ${DEPS};\
-	    rmdir $O;\
+	@if [ -h ${ONAME} ]; then\
+	    rm -f ${LIBA_R} ${LIBA_D} ${OBJS} ${DEPS} $O.d ${ONAME};\
+	    ${RMPATH} ${BUILDDIR};\
 	fi
 
 distclean:	clean
-	@rm -f Config.mk config.h config.status ${NAME}
+	@rm -f ${CONFS} config.status
 
 maintainer-clean: distclean
 
-INPLACE_INCS := $(addprefix ${NAME}/,$(filter-out config.h,${INCS}))
-${INPLACE_INCS}: ${NAME}/%:	${NAME}/config.h
-${NAME}/config.h:	config.h
-	@echo "    Linking inplace header location ..."
-	@rm -f ${NAME}; ln -s . ${NAME}
+$O.d:	${BUILDDIR}/.d
+	@[ -h ${ONAME} ] || ln -sf ${BUILDDIR} ${ONAME}
+$O%/.d:	$O.d
+	@[ -d $(dir $@) ] || mkdir $(dir $@)
+	@touch $@
+${BUILDDIR}/.d:	Makefile
+	@[ -d $(dir $@) ] || mkdir -p $(dir $@)
+	@touch $@
 
-${OBJS}:		Makefile Config.mk config.h
-Config.mk:		Config.mk.in
-config.h:		config.h.in
-Config.mk config.h:	configure
-	@if [ -x config.status ]; then echo "Reconfiguring ..."; ./config.status; \
-	else echo "Running configure ..."; ./configure; fi
+Config.mk:	Config.mk.in
+config.h:	config.h.in
+${NAME}.pc:	${NAME}.pc.in
+${OBJS}:	Makefile ${CONFS} $O.d config.h
+${CONFS}:	configure
+	@if [ -x config.status ]; then echo "Reconfiguring ...";\
+	    ./config.status;\
+	else echo "Running configure ...";\
+	    ./configure;\
+	fi
 
 -include ${DEPS}

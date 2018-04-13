@@ -5,42 +5,40 @@ MAJOR		:= @PKG_MAJOR@
 MINOR		:= @PKG_MINOR@
 
 #DEBUG		:= 1
-#BUILD_SHARED	:= 1
-BUILD_STATIC	:= 1
 
 ################ Programs ############################################
 
 CXX		:= @CXX@
+CC		:= @CC@
 AR		:= @AR@
 RANLIB		:= @RANLIB@
-DOXYGEN		:= @DOXYGEN@
 INSTALL		:= @INSTALL@
 
+INSTALLEXE	:= ${INSTALL} -D -p -m 700 -s
 INSTALLDATA	:= ${INSTALL} -D -p -m 644
 INSTALLLIB	:= ${INSTALLDATA}
+RMPATH		:= rmdir -p --ignore-fail-on-non-empty
 
 ################ Destination #########################################
 
-prefix		:= @prefix@
+BINDIR		:= @bindir@
 INCDIR		:= @includedir@
 LIBDIR		:= @libdir@
+DOCDIR		:= @docdir@
+#PKGCONFIGDIR	:= @pkgconfigdir@
 
 ################ Compiler options ####################################
 
-WARNOPTS	:= -Wall -Wextra -Woverloaded-virtual -Wpointer-arith\
-		-Wshadow -Wredundant-decls -Wcast-qual @SYSWARNS@
-CXXFLAGS	:= ${WARNOPTS} @CUSTOMINCDIR@ -fPIC
-LDFLAGS		:= @CUSTOMLIBDIR@
-LIBS		:= @libustl@ @libsupc++@
+CXXFLAGS	:= -Wall -Wextra -Wredundant-decls -Wshadow \
+		-I${INCDIR} -std=c++14 \
+		-ffunction-sections -fdata-sections \
+		-fno-threadsafe-statics -fno-stack-protector
 ifdef DEBUG
-    CXXFLAGS	+= -O0 -g
+    CXXFLAGS	+= -O0 -ggdb3
+    LDFLAGS	+= -g -rdynamic -no-pie
 else
     CXXFLAGS	+= -Os -g0 -DNDEBUG=1
-    LDFLAGS	+= -s
+    LDFLAGS	+= -s -no-pie -Wl,-O1,-gc-sections
 endif
+BUILDDIR	:= @builddir@/${NAME}
 O		:= .o/
-
-slib_lnk	= lib$1.so
-slib_son	= lib$1.so.${MAJOR}
-slib_tgt	= lib$1.so.${MAJOR}.${MINOR}
-slib_flags	= @SHBLDFL@

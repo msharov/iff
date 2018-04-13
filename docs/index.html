@@ -40,7 +40,7 @@ Building this library is a fairly standard procedure. Download the package from
 <a href="https://github.com/msharov/iff/releases/latest">https://github.com/msharov/iff/releases/latest</a>.
 Make sure you have the necessary dependencies: C++ compiler, such as gcc 4.6+, the
 <a href="https://github.com/msharov/ustl/releases/latest">uSTL</a> library
-version 1.6 or higher.
+version 2.6 or higher.
 </p><p>
 First, unpack and install uSTL, as described in its documentation.
 Unpack libiff and run <kbd>./configure &amp;&amp; make install</kbd>,
@@ -52,6 +52,10 @@ conforming to EA85 specification. Why that is so, and why you should
 take the default options anyway, is discussed in detail in the next
 section. If you really want to use the original EA85 format, you can to
 pass <kbd>--with-bigendian --with-2grain</kbd> to <tt>configure</tt>.
+</p><p>
+To see the correct link command for your project using libiff, you
+can use <kbd>pkg-config --libs --static iff</kbd>. This will include
+<kbd>-liff</kbd> and, if uSTL is a static library, <kbd>-lsupc++</kbd>.
 </p>
 <h2>Usage</h2>
 <p>
