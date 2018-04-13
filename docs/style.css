@@ -1,28 +1,33 @@
 body {
-    font-family: sans-serif;
-    color: #0A0;
-    background-color: black;
-    margin: 5mm;
+	background-color: black;
+	color: #888;
+	font-family: sans-serif;
+	margin: 0;
 }
-div.banner {
-    color: black;
-    background-color: #37A;
-    text-align: center;
-    margin-top: -5mm;
-    margin-left: -5mm;
-    margin-right: -5mm;
-    margin-bottom: 5mm;
-    padding: 1mm;
+#pagectr {
+	background-color: #004;
+	margin: 0 auto;
+	max-width: 64em;
+	overflow: hidden;
 }
-div.motto {
-    color: #159;
-    font-style: italic;
-    font-size: 2mm;
-    margin-top: -5mm;
+#header {
+	border-bottom: 1px #044 solid;
+	overflow: hidden;
+	text-align: center;
 }
-div.sffooter {
-    text-align: right;
+div#header h1 {
+	color: #0cc;
+	font-size: 1cm;
+	margin: .4em 1em;
 }
-a:link { color: #238; }
-a:visited { color: #632; }
-hr.banner { display: none; }
+div#header hr		{ display: none }
+#content {
+	background-color: #003;
+	padding: 0.5em 1.5em;
+	text-align: justify;
+}
+#content a		{ color: #0bb }
+#content a:visited	{ color: #088 }
+#content a:active	{ color: #0ff }
+#content h2,h3		{ color: #899 }
+#content pre,tt,kbd	{ color: #588 }
