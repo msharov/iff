@@ -19,8 +19,8 @@ test/all:	${test/BINS}
 test/run:	${test/BINS}
 	@for i in ${test/BINS}; do \
 	    echo "Running $$i"; \
-	    $$i > $$i.out 2>&1; \
-	    cmp test/$(notdir $$i).std $$i.out && rm -f $$i.out; \
+	    $$i < /dev/null > $$i.out 2>&1; \
+	    diff test/`basename $$i`.std $$i.out && rm -f $$i.out; \
 	done
 
 ${test/BINS}: $Otest/%: $Otest/%.o $Otest/stdmain.o ${ALLTGTS}

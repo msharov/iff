@@ -5,6 +5,6 @@ includedir=${prefix}/include
 Name: @PKG_NAME@
 Description: Interchange File Format Library
 Version: @PKG_MAJOR@.@PKG_MINOR@
-Libs: -L${libdir} -lustl
-Libs.private: -Wl,-gc-sections -lsupc++
+Requires: ustl
+Libs: -L${libdir} -liff
 Cflags: -I${includedir}

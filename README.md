@@ -16,7 +16,7 @@ $ ./configure --prefix=/usr && make check && make install
 ```
 
 If uSTL is a static library, you will need to also link with -lsupc++.
-You can use `pkg-config --libs --static iff` to get the full link command.
+Use `pkg-config --libs --static iff` to get the full link command.
 
 Read [documentation](docs/index.html).
 Report bugs at [project](https://github.com/msharov/iff)

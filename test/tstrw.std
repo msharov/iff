@@ -1,0 +1,11 @@
+Name: Player1
+Hp: 20/25, Mana: 12/42
+Inventory:
+	long sword	$500, 4 lb, Dam 10
+	leather armor	$230, 14 lb, Dam 0
+	food ration	$5, 1 lb, Dam 4
+	green potion	$50, 0 lb, Dam 0
+Quests:
+	Find the evil sourceror
+	Rescue the princess
+	Have lunch

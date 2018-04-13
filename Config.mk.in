@@ -30,9 +30,11 @@ DOCDIR		:= @docdir@
 ################ Compiler options ####################################
 
 CXXFLAGS	:= -Wall -Wextra -Wredundant-decls -Wshadow \
-		-I${INCDIR} -std=c++14 \
+		-std=c++14 @CUSTOMINCDIR@ \
 		-ffunction-sections -fdata-sections \
 		-fno-threadsafe-statics -fno-stack-protector
+LDFLAGS		:= @CUSTOMLIBDIR@
+LIBS		:= -lustl -lsupc++
 ifdef DEBUG
     CXXFLAGS	+= -O0 -ggdb3
     LDFLAGS	+= -g -rdynamic -no-pie
