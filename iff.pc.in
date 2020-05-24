@@ -1,10 +1,10 @@
 prefix=@prefix@
-libdir=${prefix}/lib
-includedir=${prefix}/include
+libdir=@libdir@
+includedir=@includedir@
 
-Name: @PKG_NAME@
+Name: @pkg_name@
 Description: Interchange File Format Library
-Version: @PKG_MAJOR@.@PKG_MINOR@
+Version: @pkg_major@.@pkg_minor@
 Requires: ustl
-Libs: -L${libdir} -liff
+Libs: -L${libdir} -l@pkg_name@
 Cflags: -I${includedir}

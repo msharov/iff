@@ -31,9 +31,9 @@ public:
     public:
 			Item (void)			: _name(),_value(),_weight(),_dam() {}
 			Item (const char* name, uint32_t value, uint16_t weight, uint16_t dam) : _name(name),_value(value),_weight(weight),_dam(dam) {}
-	void		read (istream& is)		{ is >> _name >> _value >> _weight >> _dam; }
-	void		write (ostream& os) const	{ os << _name << _value << _weight << _dam; }
-	auto		stream_size (void) const	{ return stream_size_of(_name)+stream_size_of(_value)+stream_size_of(_weight)+stream_size_of(_dam); }
+	void		read (istream& is)		{ is >> _name >> ios::align(4) >> _value >> _weight >> _dam; }
+	void		write (ostream& os) const	{ os << _name << ios::align(4) << _value << _weight << _dam; }
+	auto		stream_size (void) const	{ return Align(stream_size_of(_name),4)+stream_size_of(_value)+stream_size_of(_weight)+stream_size_of(_dam); }
 	void		Print (void) const		{ printf ("\t%s\t$%u, %hu lb, Dam %hu\n", _name.c_str(), _value, _weight, _dam); }
     private:
 	string		_name;

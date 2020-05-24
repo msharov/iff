@@ -8,13 +8,13 @@
 #pragma once
 
 // Define to the one symbol short name of this package.
-#define IFF_NAME	"@PKG_NAME@"
+#define IFF_NAME	"@pkg_name@"
 // Define to the full name and version of this package.
-#define IFF_STRING	"@PKG_NAME@ @PKG_VERSTR@"
+#define IFF_STRING	"@pkg_name@ @pkg_verstr@"
 // Define to the version of this package.
-#define IFF_VERSION	@PKG_VERSION@
+#define IFF_VERSION	@pkg_version@
 // Define to the address where bug reports for this package should be sent.
-#define IFF_BUGREPORT	"@PKG_BUGREPORT@"
+#define IFF_BUGREPORT	"@pkg_bugreport@"
 
 // The following two settings should be turned on for complete compatibility
 // with the original EA85 IFF standard. The library defaults to the less
@@ -58,13 +58,13 @@
 //
 // Define to 2 if you want chunks aligned on 2-grain instead of 4-grain.
 // Define to 1 to turn off chunk alignment.
-#define IFF_GRAIN 4
+enum { IFF_GRAIN = 4 };
 
 #if __has_include(<ustl.h>)
     #include <ustl.h>
     #if USTL_VERSION < 0x260
-	#error "uSTL library version 2.6.0 or above is required: https://github.com/msharov/ustl"
+	#error "[uSTL library](https://github.com/msharov/ustl) version 2.6.0 or above is required."
     #endif
 #else
-    #error "This project requires the uSTL library from https://github.com/msharov/ustl"
+    #error "This project requires the [uSTL library](https://github.com/msharov/ustl)"
 #endif
