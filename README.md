@@ -12,7 +12,7 @@ Download from github
 C++14 support is needed, using gcc 4.6+, and the
 [uSTL library](https://github.com/msharov/ustl/releases/latest).
 
-```bash
+```sh
 $ ./configure --prefix=/usr && make check && make install
 ```
 

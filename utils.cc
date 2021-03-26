@@ -11,7 +11,7 @@ namespace iff {
 void ReadChunkHeader (const char* typeName, istream& is, CChunkHeader& header, fmt_t fmt)
 {
     is.verify_remaining ("iff::ReadChunkHeader", typeName, stream_size_of(header));
-    const uoff_t elStart = is.pos();
+    auto elStart = is.pos();
     is >> header;
     header.Verify (fmt, typeName, elStart);
     is.verify_remaining ("iff::ReadChunkHeader", typeName, header.Size());
@@ -21,7 +21,7 @@ void ReadChunkHeader (const char* typeName, istream& is, CChunkHeader& header, f
 void ReadGroupHeader (const char* typeName, istream& is, CGroupHeader& header, fmt_t childFmt, fmt_t fmt)
 {
     is.verify_remaining ("iff::ReadGroupHeader", typeName, stream_size_of(header));
-    const uoff_t elStart = is.pos();
+    auto elStart = is.pos();
     is >> header;
     header.Verify (childFmt, fmt, typeName, elStart);
     is.verify_remaining ("iff::ReadGroupHeader", typeName, header.Size());
@@ -30,7 +30,7 @@ void ReadGroupHeader (const char* typeName, istream& is, CGroupHeader& header, f
 /// Throws XChunkSizeMismatch if chStart + chSize != chEnd
 void VerifyChunkSize (const char* typeName, uoff_t chStart, uoff_t chEnd, size_t chSize)
 {
-    const size_t realSize = chEnd - chStart;
+    auto realSize = chEnd - chStart;
     if (chSize != realSize)
 	throw XChunkSizeMismatch (typeName, chStart, chSize, realSize);
 }

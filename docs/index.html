@@ -8,8 +8,6 @@
     <meta http-equiv="Content-Type" content="text/xhtml+xml; charset=ISO-8859-1" />
     <meta name="Description" content="Interchange File Format library" />
     <meta name="Keywords" content="iff, file format" />
-    <meta name="author" content="Mike Sharov" />
-    <meta name="date" content="2018-04-14" />
 </head>
 <body>
 <div id="pagectr">
@@ -251,17 +249,16 @@ Therefore, it is much better to modify the format a little to fit modern
 hardware rather than the old Motorola 68000 for which EA85 IFF standard
 was designed.
 </p><p>
-Why use little-endian byte order? Because pretty much every computer
-in the world uses little-endian integers today. Back in 1985 there were
-quite a few big-endian machines, including Motorola 68000, and many people
-thought that big-endian byte order will eventually become the standard as
-Intel heretics convert to the true faith. This was particularly true in
-academic circles, which were aggressively lobbied by Sun and its hardware
-obtained with substatial educational institution discounts. Over time,
-the exact opposite has happened, and the only big-endian machines
-remaining are gathering dust in server rooms and antique university
-computer labs. The rest of us use Intel or ARM processors, both of which
-are little-endian.
+Why use little-endian byte order? Because every computer in the world
+uses little-endian integers today. Back in 1985 there were quite a few
+big-endian machines, including Motorola 68000, and many people thought
+that big-endian byte order will eventually become the standard as Intel
+heretics convert to the true faith. This was particularly true in academic
+circles, which were aggressively lobbied by Sun and its hardware obtained
+with substatial educational institution discounts. Over time, the exact
+opposite has happened, and the only big-endian machines remaining are
+gathering dust in server rooms and antique university computer labs. The
+rest of us use Intel or ARM processors, both of which are little-endian.
 </p><p>
 As a result, it makes far more sense to use little-endian integers
 everywhere, furthering the entrenchment of this now almost universal

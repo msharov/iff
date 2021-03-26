@@ -16,28 +16,28 @@ namespace iff {
 /// \brief Thrown when the format of the block being read does not match the format requested.
 class XFormatMismatch : public exception {
 public:
-			XFormatMismatch (const char* typeName, uoff_t offset, fmt_t expected, fmt_t actual) throw();
-    virtual const char*	what (void) const throw() { return ("IFF format mismatch"); }
-    virtual void	info (string& msgbuf, const char* fmt) const throw();
+		XFormatMismatch (const char* typeName, uoff_t offset, fmt_t expected, fmt_t actual) noexcept;
+    const char*	what (void) const noexcept override { return ("IFF format mismatch"); }
+    void	info (string& msgbuf, const char* fmt) const noexcept override;
 private:
-    const char*		m_TypeName;
-    uoff_t		m_Offset;
-    fmt_t		m_Expected;
-    fmt_t		m_Actual;
+    const char*	_typename;
+    uoff_t	_offset;
+    fmt_t	_expected;
+    fmt_t	_actual;
 };
 
 /// \class XChunkSizeMismatch xept.h iff.h
 /// \brief Thrown when the calculated size of the block being read differs from the given size.
 class XChunkSizeMismatch : public exception {
 public:
-			XChunkSizeMismatch (const char* typeName, uoff_t offset, size_t expected, size_t actual) throw();
-    virtual const char*	what (void) const throw() { return ("IFF chunk size mismatch"); }
-    virtual void	info (string& msgbuf, const char* fmt) const throw();
+		XChunkSizeMismatch (const char* typeName, uoff_t offset, size_t expected, size_t actual) noexcept;
+    const char*	what (void) const noexcept override { return ("IFF chunk size mismatch"); }
+    void	info (string& msgbuf, const char* fmt) const noexcept override;
 protected:
-    const char*		m_TypeName;
-    uoff_t		m_Offset;
-    size_t		m_Expected;
-    size_t		m_Actual;
+    const char*	_typename;
+    uoff_t	_offset;
+    size_t	_expected;
+    size_t	_actual;
 };
 
 } // namespace iff

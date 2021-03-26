@@ -161,9 +161,9 @@ ${builddir}/.d:	Makefile
 	@touch $@
 
 Config.mk:	Config.mk.in
-config.h:	config.h.in
-${name}.pc:	${name}.pc.in
-${objs}:	Makefile ${confs} $O.d
+config.h:	config.h.in | Config.mk
+${name}.pc:	${name}.pc.in | Config.mk
+${objs}:	Makefile ${confs} | $O.d
 ${confs}:	configure
 	@if [ -x config.status ]; then echo "Reconfiguring ...";\
 	    ./config.status;\

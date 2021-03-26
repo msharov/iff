@@ -20,8 +20,8 @@ void VerifyChunkSize (const char* typeName, uoff_t chStart, uoff_t chEnd, size_t
 template <typename Chunk>
 void ReadChunk (istream& is, Chunk& v, fmt_t fmt)
 {
+    auto vStart = is.pos();
     CChunkHeader header;
-    const uoff_t vStart = is.pos();
     ReadChunkHeader (typeid(v).name(), is, header, fmt);
     is >> v >> ios::talign<CChunkHeader>();
     VerifyChunkSize (typeid(v).name(), vStart, is.pos(), header.SizeWithHeader());
@@ -31,8 +31,8 @@ void ReadChunk (istream& is, Chunk& v, fmt_t fmt)
 template <typename T>
 void ReadGroup (istream& is, T& v, fmt_t childFmt, fmt_t fmt)
 {
+    auto vStart = is.pos();
     CGroupHeader header;
-    const uoff_t vStart = is.pos();
     ReadGroupHeader (typeid(v).name(), is, header, childFmt, fmt);
     is >> v;
     VerifyChunkSize (typeid(v).name(), vStart, is.pos(), header.SizeWithHeader());
@@ -54,10 +54,10 @@ IFF_GROUP_READER(CAT)
 template <typename T>
 void WriteChunk (ostream& os, const T& v, fmt_t fmt)
 {
-    const size_t vSize = Align(stream_size_of(v), stream_align_of(CChunkHeader()));
-    const CChunkHeader header (vSize, fmt);
+    auto vSize = Align (stream_size_of(v), stream_align_of(CChunkHeader()));
+    CChunkHeader header (vSize, fmt);
     #ifndef NDEBUG
-	const uoff_t vStart = os.pos();
+	auto vStart = os.pos();
     #endif
     os << header << v << ios::talign<CChunkHeader>();
     #ifndef NDEBUG
@@ -69,9 +69,9 @@ void WriteChunk (ostream& os, const T& v, fmt_t fmt)
 template <typename T>
 void WriteGroup (ostream& os, const T& v, fmt_t childFmt, fmt_t fmt)
 {
-    const CGroupHeader header (stream_size_of(v), childFmt, fmt);
+    CGroupHeader header (stream_size_of(v), childFmt, fmt);
     #ifndef NDEBUG
-	const uoff_t vStart = os.pos();
+	auto vStart = os.pos();
     #endif
     os << header << v;
     #ifndef NDEBUG
@@ -112,8 +112,8 @@ inline fmt_t PeekChunkFormat (const istream& is)
 ///
 inline fmt_t PeekChunkOrGroupFormat (const istream& is)
 {
-    fmt_t f = PeekChunkFormat (is);
-    if ((f == cfmt_FORM) | (f == cfmt_LIST) | (f == cfmt_CAT) | (f == cfmt_Vector))
+    auto f = PeekChunkFormat (is);
+    if (f == cfmt_FORM || f == cfmt_LIST || f == cfmt_CAT || f == cfmt_Vector)
 	f = PeekGroupFormat (is);
     return (f);
 }
@@ -122,16 +122,12 @@ void SkipChunk (istream& is, fmt_t fmt = cfmt_Autodetect);
 
 /// Writes a null chunk of \p fmt to \p os.
 inline void SkipChunk (ostream& os, fmt_t fmt = cfmt_Generic)
-{
-    os << CChunkHeader (0, fmt);
-}
+    { os << CChunkHeader (0, fmt); }
 
 /// Returns the stream size required to #WriteChunk \p v.
 template <typename T>
 inline size_t chunk_size_of (const T& v)
-{
-    return (Align (CChunkHeader().stream_size() + stream_size_of(v), stream_align_of (iff::CChunkHeader())));
-}
+    { return Align (CChunkHeader().stream_size() + stream_size_of(v), stream_align_of (CChunkHeader())); }
 
 #define IFF_GROUP_SIZE_OF(gtype)		\
 template <typename T>				\

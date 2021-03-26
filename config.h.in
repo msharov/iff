@@ -62,8 +62,8 @@ enum { IFF_GRAIN = 4 };
 
 #if __has_include(<ustl.h>)
     #include <ustl.h>
-    #if USTL_VERSION < 0x260
-	#error "[uSTL library](https://github.com/msharov/ustl) version 2.6.0 or above is required."
+    #if USTL_VERSION < 0x280
+	#error "[uSTL library](https://github.com/msharov/ustl) version 2.8.0 or above is required."
     #endif
 #else
     #error "This project requires the [uSTL library](https://github.com/msharov/ustl)"

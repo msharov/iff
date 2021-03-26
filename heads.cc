@@ -12,23 +12,23 @@ namespace iff {
 /// Verifies that the chunk is of \p fmt, or throws an exception.
 void CChunkHeader::Verify (fmt_t fmt, const char* chunkName, uoff_t offset) const
 {
-    if (m_Format != fmt && fmt != cfmt_Autodetect)
-	throw XFormatMismatch (chunkName, offset, fmt, m_Format);
+    if (_format != fmt && fmt != cfmt_Autodetect)
+	throw XFormatMismatch (chunkName, offset, fmt, _format);
 }
 
 //----------------------------------------------------------------------
 
 /// Initializes empty header.
 CGroupHeader::CGroupHeader (void)
-: CChunkHeader (stream_size() - CChunkHeader::stream_size(), cfmt_Generic),
-  m_ChildFormat (cfmt_Generic)
+: CChunkHeader (stream_size() - CChunkHeader::stream_size(), cfmt_Generic)
+,_childFormat (cfmt_Generic)
 {
 }
 
 /// Initializes header with given parameters
 CGroupHeader::CGroupHeader (chsize_t size, fmt_t childFormat, fmt_t fmt)
-: CChunkHeader (size + (stream_size() - CChunkHeader::stream_size()), fmt),
-  m_ChildFormat (childFormat)
+: CChunkHeader (size + (stream_size() - CChunkHeader::stream_size()), fmt)
+,_childFormat (childFormat)
 {
 }
 
@@ -36,8 +36,8 @@ CGroupHeader::CGroupHeader (chsize_t size, fmt_t childFormat, fmt_t fmt)
 void CGroupHeader::Verify (fmt_t childFmt, fmt_t fmt, const char* chunkName, uoff_t offset) const
 {
     CChunkHeader::Verify (fmt, chunkName, offset);
-    if (m_ChildFormat != childFmt && childFmt != cfmt_Autodetect)
-	throw XFormatMismatch (chunkName, offset, childFmt, m_ChildFormat);
+    if (_childFormat != childFmt && childFmt != cfmt_Autodetect)
+	throw XFormatMismatch (chunkName, offset, childFmt, _childFormat);
 }
 
 //----------------------------------------------------------------------

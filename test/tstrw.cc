@@ -8,10 +8,10 @@
 class Player {
 public:
     enum {
-	cfmt_Player = IFF_FMT('P','L','A','Y'),
-	cfmt_Stats = IFF_FMT('S','T','A','T'),
-	cfmt_Inventory = IFF_FMT('I','N','V','T'),
-	cfmt_Quests = IFF_FMT('Q','E','S','T'),
+	cfmt_Player	= IFF_SFMT("PLAY"),
+	cfmt_Stats	= IFF_SFMT("STAT"),
+	cfmt_Inventory	= IFF_SFMT("INVT"),
+	cfmt_Quests	= IFF_SFMT("QEST"),
     };
     class Stats {
     public:

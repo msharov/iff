@@ -13,52 +13,55 @@ using namespace ustl;
 //----------------------------------------------------------------------
 // Type definitions
 //----------------------------------------------------------------------
-typedef uint32_t	fmt_t;		///< Type for format fields in the headers
-typedef uint32_t	chsize_t;	///< Type for the chunk size field
-typedef uint32_t	ccount_t;	///< Type for the child count field
+using fmt_t	= uint32_t;	///< Type for format fields in the headers
+using chsize_t	= uint32_t;	///< Type for the chunk size field
+using ccount_t	= uint32_t;	///< Type for the child count field
 
 //----------------------------------------------------------------------
 // IFF standard chunk formats
 //----------------------------------------------------------------------
 
 #if IFF_BYTE_ORDER == USTL_LITTLE_ENDIAN
-    #define IFF_FMT(a,b,c,d)	((((((::iff::fmt_t(d)<<8)|(c))<<8)|(b))<<8)|(a))
-    inline void boci2n (uint32_t& v)	{ v = le_to_native(v); }
-    inline uint32_t bon2i(uint32_t v)	{ return (native_to_le(v)); }
+    inline static constexpr fmt_t IFF_FMT (fmt_t a, fmt_t b, fmt_t c, fmt_t d)
+	{ return (d<<24)|(c<<16)|(b<<8)|a; }
+    inline static void boci2n (uint32_t& v)	{ v = le_to_native(v); }
+    inline static uint32_t bon2i(uint32_t v)	{ return (native_to_le(v)); }
 #else
-    #define IFF_FMT(a,b,c,d)	((((((::iff::fmt_t(a)<<8)|(b))<<8)|(c))<<8)|(d))
-    inline void boci2n (uint32_t& v)	{ v = be_to_native(v); }
-    inline uint32_t bon2i(uint32_t v)	{ return (native_to_be(v)); }
+    inline static constexpr fmt_t IFF_FMT (fmt_t a, fmt_t b, fmt_t c, fmt_t d)
+	{ return (a<<24)|(b<<16)|(c<<8)|d; }
+    inline static void boci2n (uint32_t& v)	{ v = be_to_native(v); }
+    inline static uint32_t bon2i(uint32_t v)	{ return (native_to_be(v)); }
 #endif
-#define IFF_SFMT(s)		IFF_FMT(s[0],s[1],s[2],s[3])
+inline constexpr fmt_t IFF_SFMT (const char* s)
+    { return IFF_FMT(s[0],s[1],s[2],s[3]); }
 
-enum {
+enum : fmt_t {
     cfmt_Unknown		= 0,
-    cfmt_FORM			= IFF_FMT('F','O','R','M'),
-    cfmt_LIST			= IFF_FMT('L','I','S','T'),
-    cfmt_CAT			= IFF_FMT('C','A','T',' '),
-    cfmt_Filler			= IFF_FMT(' ',' ',' ',' '),
-    cfmt_Bitmap			= IFF_FMT('I','L','B','M'),
-    cfmt_Properties		= IFF_FMT('P','R','O','P'),
-    cfmt_BitmapHeader		= IFF_FMT('B','M','H','D'),
-    cfmt_ColorMap		= IFF_FMT('C','M','A','P'),
-    cfmt_ColorLookupTable	= IFF_FMT('C','L','U','T'),
-    cfmt_ColorCycle1		= IFF_FMT('C','R','N','G'),
-    cfmt_ColorCycle2		= IFF_FMT('C','C','R','T'),
-    cfmt_HotSpot		= IFF_FMT('G','R','A','B'),
-    cfmt_Sprite			= IFF_FMT('S','P','R','T'),
-    cfmt_VoiceHeader		= IFF_FMT('V','H','D','R'),
-    cfmt_Name			= IFF_FMT('N','A','M','E'),
-    cfmt_Copyright		= IFF_FMT('(','c',')',' '),
-    cfmt_Author			= IFF_FMT('A','U','T','H'),
-    cfmt_Annotation		= IFF_FMT('A','N','N','O'),
-    cfmt_Attack			= IFF_FMT('A','T','A','K'),
-    cfmt_Release		= IFF_FMT('R','L','S','E'),
-    cfmt_Generic		= IFF_FMT('B','O','D','Y'),
-    cfmt_Vector			= IFF_FMT('V','E','C','T'),
-    cfmt_CountedContainer	= IFF_FMT('C','N','T','R'),
-    cfmt_StringTable		= IFF_FMT('S','T','R','T'),
-    cfmt_Autodetect		= IFF_FMT('A','U','T','O')
+    cfmt_FORM			= IFF_SFMT("FORM"),
+    cfmt_LIST			= IFF_SFMT("LIST"),
+    cfmt_CAT			= IFF_SFMT("CAT "),
+    cfmt_Filler			= IFF_SFMT("    "),
+    cfmt_Bitmap			= IFF_SFMT("ILBM"),
+    cfmt_Properties		= IFF_SFMT("PROP"),
+    cfmt_BitmapHeader		= IFF_SFMT("BMHD"),
+    cfmt_ColorMap		= IFF_SFMT("CMAP"),
+    cfmt_ColorLookupTable	= IFF_SFMT("CLUT"),
+    cfmt_ColorCycle1		= IFF_SFMT("CRNG"),
+    cfmt_ColorCycle2		= IFF_SFMT("CCRT"),
+    cfmt_HotSpot		= IFF_SFMT("GRAB"),
+    cfmt_Sprite			= IFF_SFMT("SPRT"),
+    cfmt_VoiceHeader		= IFF_SFMT("VHDR"),
+    cfmt_Name			= IFF_SFMT("NAME"),
+    cfmt_Copyright		= IFF_SFMT("(c) "),
+    cfmt_Author			= IFF_SFMT("AUTH"),
+    cfmt_Annotation		= IFF_SFMT("ANNO"),
+    cfmt_Attack			= IFF_SFMT("ATAK"),
+    cfmt_Release		= IFF_SFMT("RLSE"),
+    cfmt_Generic		= IFF_SFMT("BODY"),
+    cfmt_Vector			= IFF_SFMT("VECT"),
+    cfmt_CountedContainer	= IFF_SFMT("CNTR"),
+    cfmt_StringTable		= IFF_SFMT("STRT"),
+    cfmt_Autodetect		= IFF_SFMT("AUTO")
 };
 
 //----------------------------------------------------------------------
@@ -74,18 +77,18 @@ enum {
 ///
 class CChunkHeader {
 public:
-    inline		CChunkHeader (void)		: m_Format (cfmt_Generic), m_Size (0) { }
-    inline		CChunkHeader (chsize_t size, fmt_t fmt = cfmt_Generic)	: m_Format (fmt), m_Size (size) { }
-    inline void		read (istream& is)		{ is >> m_Format >> m_Size; boci2n(m_Format); boci2n(m_Size); }
-    inline void		write (ostream& os) const	{ os << bon2i(m_Format) << bon2i(m_Size); }
-    inline size_t	stream_size (void) const	{ return (stream_size_of(m_Format) + stream_size_of(m_Size)); }
-    inline size_t	Size (void) const		{ return (m_Size); }
-    inline size_t	SizeWithHeader (void) const	{ return (Size() + stream_size()); }
-    inline fmt_t	Format (void) const		{ return (m_Format); }
-    void		Verify (fmt_t fmt = cfmt_Generic, const char* chunkName = "chunk", uoff_t offset = 0) const;
+    inline constexpr		CChunkHeader (void)		: _format (cfmt_Generic), _size (0) {}
+    inline constexpr explicit	CChunkHeader (chsize_t size, fmt_t fmt = cfmt_Generic)	: _format (fmt), _size (size) {}
+    inline void			read (istream& is)		{ is >> _format >> _size; boci2n(_format); boci2n(_size); }
+    inline void			write (ostream& os) const	{ os << bon2i(_format) << bon2i(_size); }
+    inline size_t		stream_size (void) const	{ return (stream_size_of(_format) + stream_size_of(_size)); }
+    inline constexpr size_t	Size (void) const		{ return _size; }
+    inline size_t		SizeWithHeader (void) const	{ return Size() + stream_size(); }
+    inline constexpr fmt_t	Format (void) const		{ return _format; }
+    void			Verify (fmt_t fmt = cfmt_Generic, const char* chunkName = "chunk", uoff_t offset = 0) const;
 private:
-    fmt_t		m_Format;	///< Format of the chunk
-    chsize_t		m_Size;		///< Size of the chunk including the header.
+    fmt_t	_format;	///< Format of the chunk
+    chsize_t	_size;		///< Size of the chunk including the header.
 };
 
 //----------------------------------------------------------------------
@@ -101,14 +104,14 @@ class CGroupHeader : public CChunkHeader {
 public:
 			CGroupHeader (void);
 			CGroupHeader (chsize_t size, fmt_t childFormat = cfmt_Generic, fmt_t fmt = cfmt_FORM);
-    inline void		read (istream& is)		{ CChunkHeader::read (is); is >> m_ChildFormat; boci2n (m_ChildFormat); }
-    inline void		write (ostream& os) const	{ CChunkHeader::write (os); os << bon2i(m_ChildFormat); }
-    inline size_t	stream_size (void) const	{ return (CChunkHeader::stream_size() + stream_size_of(m_ChildFormat)); }
-    inline fmt_t	ChildFormat (void) const	{ return (m_ChildFormat); }
-    inline size_t	Size (void) const		{ return (CChunkHeader::Size() - (stream_size() - CChunkHeader::stream_size())); }
+    inline void		read (istream& is)		{ CChunkHeader::read (is); is >> _childFormat; boci2n (_childFormat); }
+    inline void		write (ostream& os) const	{ CChunkHeader::write (os); os << bon2i(_childFormat); }
+    inline size_t	stream_size (void) const	{ return CChunkHeader::stream_size() + stream_size_of(_childFormat); }
+    inline fmt_t	ChildFormat (void) const	{ return _childFormat; }
+    inline size_t	Size (void) const		{ return CChunkHeader::Size() - (stream_size() - CChunkHeader::stream_size()); }
     void		Verify (fmt_t childFormat = cfmt_Generic, fmt_t fmt = cfmt_FORM, const char* chunkName = "FORM", uoff_t offset = 0) const;
 private:
-    fmt_t		m_ChildFormat;	///< Format of each child chunk.
+    fmt_t		_childFormat;	///< Format of each child chunk.
 };
 
 //----------------------------------------------------------------------
@@ -123,6 +126,4 @@ struct SProp {
 
 } // namespace iff
 
-ALIGNOF(iff::CChunkHeader, IFF_GRAIN)
-STD_STREAMABLE(iff::CChunkHeader)
-STD_STREAMABLE(iff::CGroupHeader)
+ALIGNOF (iff::CChunkHeader, IFF_GRAIN)
